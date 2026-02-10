@@ -1,0 +1,22 @@
+[project]
+name = "ml-deployment-api"
+version = "0.1.0"
+description = "API de déploiement d'un modèle de Machine Learning avec flask"
+authors = [
+    { name = "jika"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "flask>=3.0.0",
+    "pytest>=9.0.1",
+    "scikit-learn>=1.5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

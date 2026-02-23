@@ -208,3 +208,5 @@ temp/
 
 # Notes Files
 notes*.txt
+notes*.md
+notes*.ipynb

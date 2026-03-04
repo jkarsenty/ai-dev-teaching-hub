@@ -210,3 +210,4 @@ temp/
 notes*.txt
 notes*.md
 notes*.ipynb
+notes*/

@@ -129,6 +129,7 @@ dmypy.json
 *.joblib
 *.h5
 *.hdf5
+*.keras
 *.pb
 *.pth
 *.pt

@@ -1,0 +1,5 @@
+model-deployment/
+├── app.py          ← point d'entrée Streamlit
+├── model.py        ← TF-IDF + LogisticRegression
+├── pyproject.toml
+└── README.md

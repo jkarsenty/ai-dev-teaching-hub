@@ -1,7 +1,7 @@
-# Sentiment Analysis — Streamlit Simple
+# MNIST Classifier — Streamlit Front
 
-Interface web de sentiment analysis avec un modèle TF-IDF + LogisticRegression
-embarqué directement dans le front, sans API.
+Interface web de classification de chiffres manuscrits via un CNN Keras entraîné sur MNIST.
+Fonctionne en standalone, sans API.
 
 ## Prérequis
 ```bash
@@ -13,13 +13,20 @@ pip install uv
 uv venv .venv --python 3.12
 source .venv/bin/activate  # Mac / Linux
 uv sync
-uv run streamlit run app.py
+uv run python -m streamlit run app.py
 ```
+
+> Au premier lancement, le modèle est entraîné (~2 min) puis sauvegardé dans `models/`.
+> Les lancements suivants chargent directement le modèle sauvegardé.
 
 L'interface est accessible sur `http://localhost:8501`
 
 ## Utilisation
 
-- Entrer un texte dans la zone de saisie
-- Cliquer sur **Analyser**
-- Le sentiment et la confidence s'affichent directement
+### Onglet Dessiner
+- Dessinez un chiffre dans la zone noire avec la souris
+- Cliquez sur **Prédire**
+
+### Onglet Uploader
+- Uploadez une image PNG ou JPEG d'un chiffre manuscrit
+- La prédiction s'affiche automatiquement

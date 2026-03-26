@@ -1,23 +1,64 @@
-# Sentiment Analysis API — Flask Avancé
+# Sentiment Analysis API — Flask + uv + Docker
 
-API REST de sentiment analysis basée sur un pipeline TF-IDF + Régression Logistique, servie avec Flask.
+API REST de sentiment analysis basée sur un pipeline TF-IDF + Régression Logistique,
+servie avec Flask, gérée avec uv et conteneurisée avec Docker.
 
-## Lancement
+## Prérequis
+
+Installer uv si nécessaire :
+```bash
+pip install uv
+```
+
+## Lancement local avec uv
+
+Créer un environnement virtuel dédié avec Python 3.12 :
+```bash
+uv venv .venv --python 3.12
+```
+
+Activer l'environnement :
+```bash
+# Mac / Linux
+source .venv/bin/activate
+
+# Windows
+.venv\Scripts\activate
+```
 
 Installer les dépendances :
 ```bash
-pip install -r requirements.txt
+uv sync
 ```
 
 Lancer l'API :
 ```bash
-python app.py
+uv run python app.py
+```
+
+> Tu peux aussi lancer directement sans activer le venv :
+> ```bash
+> uv run python app.py
+> ```
+> `uv run` détecte automatiquement le `.venv` du projet.
+
+## Lancement avec Docker
+
+Depuis `model-deployment/` :
+
+Build :
+```bash
+docker build -t sentiment-api .
+```
+
+Run :
+```bash
+docker run -p 5000:5000 sentiment-api
 ```
 
 ## Endpoints
 
 ### `POST /predict`
-Prédit le sentiment d'un texte.
 
 **Body JSON :**
 ```json
@@ -30,9 +71,6 @@ Prédit le sentiment d'un texte.
 ```
 
 ### `GET /health`
-Vérifie que l'API tourne.
-
-**Réponse :**
 ```json
 {"status": "ok"}
 ```

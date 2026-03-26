@@ -11,6 +11,8 @@ model-deployment/
 │       ├── __init__.py
 │       ├── text.py
 │       └── image.py
+├── models/                  ← fichiers modèles sauvegardés
+│   └── .gitkeep
 ├── pyproject.toml
 ├── Dockerfile
 └── README.md

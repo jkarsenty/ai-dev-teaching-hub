@@ -1,6 +1,7 @@
-# ML & DL API — FastAPI Avancé
+# ML & DL API — Template API
 
-API REST avec deux endpoints : sentiment analysis sur texte et classification de chiffres manuscrits (MNIST).
+API REST complète avec deux endpoints : sentiment analysis via DistilBERT et
+classification de chiffres manuscrits via CNN Keras (MNIST).
 
 ## Prérequis
 ```bash
@@ -14,6 +15,10 @@ source .venv/bin/activate  # Mac / Linux
 uv sync
 uv run uvicorn app.main:app --reload
 ```
+
+> Au premier lancement, le modèle DistilBERT est téléchargé (~260MB).  
+> et le CNN est entraîné sur MNIST (~2 min). Les modèles sont ensuite.  
+> sauvegardés dans `models/` et rechargés directement aux lancements suivants.  
 
 ## Lancement avec Docker
 ```bash
@@ -37,7 +42,7 @@ docker run -p 8000:8000 ml-dl-api
 
 **Réponse :**
 ```json
-{"text": "I love this product", "sentiment": "positive", "confidence": 0.87}
+{"text": "I love this product", "sentiment": "positive", "confidence": 0.9998}
 ```
 
 **Test curl :**
@@ -48,11 +53,11 @@ curl -X POST http://127.0.0.1:8000/predict/text \
 ```
 
 ### `POST /predict/image`
-Upload d'une image PNG ou JPEG d'un chiffre manuscrit (28x28 recommandé).
+Upload d'une image PNG ou JPEG d'un chiffre manuscrit.
 
 **Réponse :**
 ```json
-{"digit": 7, "confidence": 0.98}
+{"digit": 7, "confidence": 0.9981}
 ```
 
 **Test curl :**

@@ -1,56 +1,34 @@
-# Sentiment Analysis API — FastAPI + uv + Docker
+# ML & DL API — FastAPI Avancé
 
-API REST de sentiment analysis basée sur un pipeline TF-IDF + Régression Logistique,
-servie avec FastAPI, gérée avec uv et conteneurisée avec Docker.
+API REST avec deux endpoints : sentiment analysis sur texte et classification de chiffres manuscrits (MNIST).
 
 ## Prérequis
-
-Installer uv si nécessaire :
 ```bash
 pip install uv
 ```
 
 ## Lancement local avec uv
-
-Créer un environnement virtuel dédié avec Python 3.12 :
 ```bash
 uv venv .venv --python 3.12
-```
-
-Activer l'environnement :
-```bash
-# Mac / Linux
-source .venv/bin/activate
-
-# Windows
-.venv\Scripts\activate
-```
-
-Installer les dépendances :
-```bash
+source .venv/bin/activate  # Mac / Linux
 uv sync
-```
-
-Lancer l'API :
-```bash
-uv run uvicorn app:app --reload
+uv run uvicorn app.main:app --reload
 ```
 
 ## Lancement avec Docker
-
-Build :
 ```bash
-docker build -t sentiment-api .
-```
-
-Run :
-```bash
-docker run -p 8000:8000 sentiment-api
+docker build -t ml-dl-api .
+docker run -p 8000:8000 ml-dl-api
 ```
 
 ## Endpoints
 
-### `POST /predict`
+### `GET /health`
+```json
+{"status": "ok"}
+```
+
+### `POST /predict/text`
 
 **Body JSON :**
 ```json
@@ -62,10 +40,26 @@ docker run -p 8000:8000 sentiment-api
 {"text": "I love this product", "sentiment": "positive", "confidence": 0.87}
 ```
 
-### `GET /health`
+**Test curl :**
+```bash
+curl -X POST http://127.0.0.1:8000/predict/text \
+  -H "Content-Type: application/json" \
+  -d '{"text": "I love this product"}'
+```
+
+### `POST /predict/image`
+Upload d'une image PNG ou JPEG d'un chiffre manuscrit (28x28 recommandé).
+
+**Réponse :**
 ```json
-{"status": "ok"}
+{"digit": 7, "confidence": 0.98}
+```
+
+**Test curl :**
+```bash
+curl -X POST http://127.0.0.1:8000/predict/image \
+  -F "file=@/chemin/vers/image.png"
 ```
 
 ### `GET /docs`
-Interface Swagger UI auto-générée — accessible sur `http://127.0.0.1:8000/docs`
+Swagger UI — `http://127.0.0.1:8000/docs`

@@ -1,7 +1,7 @@
-# Sentiment Analysis API — Flask + uv + Docker
+# Sentiment Analysis API — FastAPI + uv + Docker
 
 API REST de sentiment analysis basée sur un pipeline TF-IDF + Régression Logistique,
-servie avec Flask, gérée avec uv et conteneurisée avec Docker.
+servie avec FastAPI, gérée avec uv et conteneurisée avec Docker.
 
 ## Prérequis
 
@@ -33,18 +33,10 @@ uv sync
 
 Lancer l'API :
 ```bash
-uv run python app.py
+uv run uvicorn app:app --reload
 ```
 
-> Tu peux aussi lancer directement sans activer le venv :
-> ```bash
-> uv run python app.py
-> ```
-> `uv run` détecte automatiquement le `.venv` du projet.
-
 ## Lancement avec Docker
-
-Depuis `model-deployment/` :
 
 Build :
 ```bash
@@ -53,7 +45,7 @@ docker build -t sentiment-api .
 
 Run :
 ```bash
-docker run -p 5000:5000 sentiment-api
+docker run -p 8000:8000 sentiment-api
 ```
 
 ## Endpoints
@@ -74,3 +66,6 @@ docker run -p 5000:5000 sentiment-api
 ```json
 {"status": "ok"}
 ```
+
+### `GET /docs`
+Interface Swagger UI auto-générée — accessible sur `http://127.0.0.1:8000/docs`

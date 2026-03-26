@@ -1,21 +1,30 @@
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from model import load_model, predict
 
-app = Flask(__name__)
+app = FastAPI(
+    title="Sentiment Analysis API",
+    description="Analyse de sentiment basée sur un pipeline TF-IDF + Régression Logistique",
+    version="1.0.0",
+)
+
 model = load_model()
 
-@app.route("/predict", methods=["POST"])
-def predict_route():
-    data = request.get_json()
-    text = data.get("text", "")
-    if not text:
-        return jsonify({"error": "Champ 'text' manquant"}), 400
-    result = predict(model, text)
-    return jsonify({"text": text, **result})
+class PredictRequest(BaseModel):
+    text: str
 
-@app.route("/health", methods=["GET"])
+class PredictResponse(BaseModel):
+    text: str
+    sentiment: str
+    confidence: float
+
+@app.get("/health")
 def health():
-    return jsonify({"status": "ok"})
+    return {"status": "ok"}
 
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+@app.post("/predict", response_model=PredictResponse)
+def predict_route(request: PredictRequest):
+    if not request.text.strip():
+        raise HTTPException(status_code=400, detail="Le champ 'text' ne peut pas être vide")
+    result = predict(model, request.text)
+    return PredictResponse(text=request.text, **result)

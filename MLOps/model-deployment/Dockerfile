@@ -1,19 +1,15 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
-# Installer uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 WORKDIR /app
 
-# Copier les fichiers de dépendances en premier (cache Docker)
 COPY pyproject.toml .
 
-# Installer les dépendances
 RUN uv sync --no-dev
 
-# Copier le reste du code
 COPY app.py model.py ./
 
-EXPOSE 5000
+EXPOSE 8000
 
-CMD ["uv", "run", "python", "app.py"]
+CMD ["uv", "run", "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

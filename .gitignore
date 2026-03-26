@@ -135,7 +135,6 @@ dmypy.json
 *.pt
 *.onnx
 *.mlmodel
-models/
 checkpoints/
 weights/
 *.weights

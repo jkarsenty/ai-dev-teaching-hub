@@ -1,0 +1,17 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models
+
+  front:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://api:8000
+    depends_on:
+      - api
+    command: [ "uv", "run", "python", "-m", "streamlit", "run", "front/app.py", "--server.port", "8501", "--server.address", "0.0.0.0" ]

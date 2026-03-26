@@ -1,7 +1,22 @@
 model-deployment/
-├── app.py
-├── pyproject.toml
-├── .python-version
+├── api/
+│   ├── __init__.py
+│   ├── main.py
+│   ├── schemas.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── text_model.py
+│   │   └── image_model.py
+│   └── preprocess/
+│       ├── __init__.py
+│       ├── text.py
+│       └── image.py
+├── front/
+│   └── app.py
 ├── models/
 │   └── .gitkeep
+├── pyproject.toml
+├── Dockerfile
+├── docker-compose.yml
+├── .python-version
 └── README.md

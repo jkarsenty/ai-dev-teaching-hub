@@ -13,6 +13,8 @@ model-deployment/
 │       └── image.py
 ├── models/                  ← fichiers modèles sauvegardés
 │   └── .gitkeep
+├── examples/                  ← fichiers d'exemple pour une demo
+│   └── .gitkeep
 ├── pyproject.toml
 ├── Dockerfile
 └── README.md

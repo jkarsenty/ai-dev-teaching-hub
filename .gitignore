@@ -211,3 +211,6 @@ notes*.txt
 notes*.md
 notes*.ipynb
 notes*/
+
+
+MLOps/model-deployment/app/models/__pycache__/*

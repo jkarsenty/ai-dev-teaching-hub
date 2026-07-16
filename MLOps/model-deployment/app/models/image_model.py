@@ -40,4 +40,7 @@ def predict_image(model: keras.Model, image_bytes: bytes) -> dict:
     probas = model.predict(array)[0]
     digit = int(np.argmax(probas))
     confidence = round(float(np.max(probas)), 4)
-    return {"digit": digit, "confidence": confidence}
+
+    probas_rounded = {i: proba for i, proba in enumerate(np.round(probas, 4).tolist())}
+
+    return {"digit": digit, "confidence": confidence, "probas": probas_rounded}

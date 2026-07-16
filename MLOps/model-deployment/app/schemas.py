@@ -11,3 +11,4 @@ class TextResponse(BaseModel):
 class ImageResponse(BaseModel):
     digit: int
     confidence: float
+    probas: dict[int, float]

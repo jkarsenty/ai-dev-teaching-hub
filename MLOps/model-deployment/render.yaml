@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: ml-dl-api
+    runtime: docker
+    dockerfilePath: ./model-deployment/Dockerfile
+    dockerContext: ./model-deployment
+    plan: standard
+    healthCheckPath: /health

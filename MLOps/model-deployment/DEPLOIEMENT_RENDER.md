@@ -9,32 +9,54 @@ en tant que **Web Service Docker**.
 - **`Dockerfile`** :
   - le port d'écoute d'uvicorn utilise désormais la variable `$PORT` fournie
     par Render (`--port ${PORT:-8000}`) au lieu du port `8000` codé en dur ;
-  - les modèles (DistilBERT + CNN Keras) sont téléchargés/entraînés **pendant
-    le build** (`RUN uv run python -c "..."`) plutôt qu'au premier démarrage.
+  - le modèle image (CNN Keras) est entraîné **pendant le build**
+    (`RUN uv run python -c "..."`) plutôt qu'au premier démarrage.
 - **`.dockerignore`** (nouveau) : exclut `.venv`, `__pycache__`, les modèles
   locaux (`*.pkl`, `*.keras`) et les artefacts de dev pour ne pas alourdir le
   contexte de build envoyé à Docker.
 - **`render.yaml`** (nouveau) : Blueprint Render décrivant le service
   (build Docker, chemin du Dockerfile, healthcheck).
+- **Endpoint `/predict/text` (DistilBERT) désactivé** : commenté dans
+  `app/main.py` et dans `pyproject.toml` (dépendances `torch`/`transformers`).
+  Voir "Tenir sur le plan Free" ci-dessous pour le pourquoi.
+
+## Tenir sur le plan Free (512 Mo)
+
+Un premier essai avec les **deux** modèles actifs (DistilBERT + CNN Keras,
+donc torch + tensorflow + transformers chargés simultanément) a échoué sur le
+plan Free avec `Out of memory (used over 512Mi)` au démarrage : le simple
+*import* de torch et de tensorflow, avant même de charger les poids, dépasse
+déjà largement 512 Mo à eux deux.
+
+Options envisagées pour rester sur Free :
+1. **Ne garder qu'un seul modèle** (choix retenu ici) — on désactive le texte
+   (DistilBERT/torch) et on garde l'image (CNN/tensorflow). torch a un
+   baseline mémoire à l'import un peu plus léger que tensorflow, donc le
+   supprimer laisse plus de marge — mais rien ne garantit que tensorflow seul
+   tienne dans 512 Mo, c'est un pari, pas une certitude.
+2. Déployer plutôt la branche `mlops/fastapi-simple` (scikit-learn, sans
+   torch/tensorflow) — solution la plus fiable pour rester gratuit.
+3. Remplacer les modèles DL par des équivalents scikit-learn.
+4. Passer par des runtimes d'inférence allégés (ONNX Runtime, TFLite) au lieu
+   des libs complètes torch/tensorflow.
+
+**Pour réactiver `/predict/text`** (nécessite alors un plan Render >= Standard,
+2 Go) : décommenter dans `app/main.py` les imports, la ligne dans `lifespan()`
+et la route `/predict/text` ; décommenter `torch`/`transformers` dans
+`pyproject.toml` ; ajouter la ligne de bake DistilBERT dans le `Dockerfile`.
 
 ## Prérequis
 
 - Un compte [Render](https://dashboard.render.com) avec le repo GitHub connecté.
-- Un plan payant **Standard (2 Go de RAM) minimum**. Le plan Free (512 Mo) est
-  insuffisant : torch, tensorflow et transformers chargés simultanément
-  dépassent largement cette limite. Confirmé en pratique : un essai sur Free a
-  échoué avec `Out of memory (used over 512Mi)` au démarrage (chargement des
-  modèles en RAM dans `lifespan()`).
 - Docker installé en local pour **tester le build avant de push** :
   ```bash
   cd model-deployment
   docker build -t ml-dl-api .
   docker run -p 8000:8000 -e PORT=8000 ml-dl-api
   ```
-- Prévoir un build long (plusieurs minutes) : installation de torch/tensorflow
-  (~1–2 Go de dépendances) + téléchargement des poids DistilBERT (~260 Mo) +
-  entraînement du CNN sur MNIST (~2 min), le tout exécuté pendant le build
-  Docker sur les serveurs de Render.
+- Prévoir un build de quelques minutes : installation de tensorflow (~1 Go de
+  dépendances) + entraînement du CNN sur MNIST (~2 min), exécuté pendant le
+  build Docker sur les serveurs de Render.
 
 ## Différences entre l'exécution locale et le déploiement Render
 
@@ -42,8 +64,8 @@ en tant que **Web Service Docker**.
 |---|---|---|
 | **Port** | fixe, `8000` | dynamique, imposé par `$PORT` (variable d'env injectée par Render) |
 | **Filesystem** | persistant sur la machine du dev : `models/` garde les poids d'une exécution à l'autre | **éphémère** — tout ce qui n'est pas dans l'image Docker est perdu à chaque redeploy/restart |
-| **Chargement des modèles** | téléchargés/entraînés au premier lancement, réutilisés ensuite depuis `models/` | **bakés dans l'image au build** (sinon re-téléchargement + ré-entraînement à chaque redémarrage → healthcheck en timeout) |
-| **Mémoire disponible** | celle de la machine du dev (souvent 8–16 Go) | limitée au plan Render choisi ; nécessite Standard (2 Go) mini pour torch+tensorflow+transformers en simultané |
+| **Chargement des modèles** | entraîné au premier lancement, réutilisé ensuite depuis `models/` | **baké dans l'image au build** (sinon ré-entraînement à chaque redémarrage → healthcheck en timeout) |
+| **Mémoire disponible** | celle de la machine du dev (souvent 8–16 Go) | limitée au plan Render choisi ; le plan Free (512 Mo) est visé ici en gardant un seul modèle (CNN/tensorflow) |
 | **Reload à chaud** | `--reload` activable pour itérer vite | jamais utilisé en production |
 | **Logs** | dans le terminal du dev | agrégés automatiquement dans le dashboard Render (stdout/stderr) |
 | **Mise à jour du code** | immédiate (fichiers locaux) | nécessite un nouveau build/déploiement (push sur la branche connectée) |

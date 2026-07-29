@@ -1,7 +1,11 @@
 # ML & DL API — Template API
 
-API REST complète avec deux endpoints : sentiment analysis via DistilBERT et
-classification de chiffres manuscrits via CNN Keras (MNIST).
+API REST avec classification de chiffres manuscrits via CNN Keras (MNIST).
+
+> Sur cette branche (`mlops/template-api-render`), l'endpoint `/predict/text`
+> (DistilBERT) est **désactivé** (commenté dans `app/main.py` et
+> `pyproject.toml`) pour tenir dans les 512 Mo du plan Free de Render — voir
+> [DEPLOIEMENT_RENDER.md](./DEPLOIEMENT_RENDER.md).
 
 ## Prérequis
 ```bash
@@ -33,24 +37,9 @@ docker run -p 8000:8000 ml-dl-api
 {"status": "ok"}
 ```
 
-### `POST /predict/text`
+### `POST /predict/text` — désactivé sur cette branche
 
-**Body JSON :**
-```json
-{"text": "I love this product"}
-```
-
-**Réponse :**
-```json
-{"text": "I love this product", "sentiment": "positive", "confidence": 0.9998}
-```
-
-**Test curl :**
-```bash
-curl -X POST http://127.0.0.1:8000/predict/text \
-  -H "Content-Type: application/json" \
-  -d '{"text": "I love this product"}'
-```
+Voir `app/main.py` pour réactiver (nécessite un plan Render >= Standard).
 
 ### `POST /predict/image`
 Upload d'une image PNG ou JPEG d'un chiffre manuscrit.

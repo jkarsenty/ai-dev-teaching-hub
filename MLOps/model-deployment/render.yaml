@@ -2,7 +2,7 @@ services:
   - type: web
     name: ml-dl-api
     runtime: docker
-    dockerfilePath: ./model-deployment/Dockerfile
-    dockerContext: ./model-deployment
+    dockerfilePath: ./MLOps/model-deployment/Dockerfile
+    dockerContext: ./MLOps/model-deployment
     plan: free
     healthCheckPath: /health

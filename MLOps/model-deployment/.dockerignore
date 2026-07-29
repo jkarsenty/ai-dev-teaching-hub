@@ -1,0 +1,13 @@
+.venv
+__pycache__
+*.pyc
+models/*
+!models/.gitkeep
+*.pkl
+*.keras
+.git
+.gitignore
+.dockerignore
+README.md
+DEPLOIEMENT_RENDER.md
+examples

@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: mnist-front
+    runtime: docker
+    dockerfilePath: ./MLOps/model-deployment/Dockerfile
+    dockerContext: ./MLOps/model-deployment
+    plan: free
+    envVars:
+      - key: API_URL
+        value: https://ml-dl-api.onrender.com

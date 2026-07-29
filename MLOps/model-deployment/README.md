@@ -1,7 +1,8 @@
 # MNIST Classifier — Streamlit Front
 
-Interface web de classification de chiffres manuscrits via un CNN Keras entraîné sur MNIST.
-Fonctionne en standalone, sans API.
+Interface web de classification de chiffres manuscrits. Appelle l'API
+`ml-dl-api` (branche `mlops/template-api-render`) via `POST /predict/image` —
+voir [DEPLOIEMENT_RENDER.md](./DEPLOIEMENT_RENDER.md).
 
 ## Prérequis
 ```bash
@@ -9,15 +10,17 @@ pip install uv
 ```
 
 ## Lancement local avec uv
+
+Lancer d'abord l'API (`model-deployment` de `mlops/template-api-render`) sur
+`http://localhost:8000`, puis :
 ```bash
 uv venv .venv --python 3.12
 source .venv/bin/activate  # Mac / Linux
 uv sync
-uv run python -m streamlit run app.py
+API_URL=http://localhost:8000 uv run python -m streamlit run app.py
 ```
 
-> Au premier lancement, le modèle est entraîné (~2 min) puis sauvegardé dans `models/`.
-> Les lancements suivants chargent directement le modèle sauvegardé.
+Sans `API_URL`, l'app pointe par défaut sur `http://localhost:8000`.
 
 L'interface est accessible sur `http://localhost:8501`
 

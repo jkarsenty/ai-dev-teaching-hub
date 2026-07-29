@@ -5,9 +5,8 @@ requires-python = ">=3.12"
 dependencies = [
     "streamlit>=1.35",
     "streamlit-drawable-canvas>=0.9",
-    "tensorflow>=2.16",
     "pillow>=10.0",
-    "numpy>=1.26",
+    "requests>=2.31",
 ]
 
 [dependency-groups]

@@ -22,7 +22,9 @@ en tant que **Web Service Docker**.
 - Un compte [Render](https://dashboard.render.com) avec le repo GitHub connecté.
 - Un plan payant **Standard (2 Go de RAM) minimum**. Le plan Free (512 Mo) est
   insuffisant : torch, tensorflow et transformers chargés simultanément
-  dépassent largement cette limite.
+  dépassent largement cette limite. Confirmé en pratique : un essai sur Free a
+  échoué avec `Out of memory (used over 512Mi)` au démarrage (chargement des
+  modèles en RAM dans `lifespan()`).
 - Docker installé en local pour **tester le build avant de push** :
   ```bash
   cd model-deployment

@@ -4,5 +4,5 @@ services:
     runtime: docker
     dockerfilePath: ./model-deployment/Dockerfile
     dockerContext: ./model-deployment
-    plan: standard
+    plan: free
     healthCheckPath: /health

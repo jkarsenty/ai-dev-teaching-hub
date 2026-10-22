@@ -8,7 +8,7 @@ from sklearn.linear_model import LogisticRegression
 # Metrics et évaluation
 from sklearn.metrics import accuracy_score #, classification_report, confusion_matrix
 
-from preprocess import preprocess
+from data_preprocessing import preprocess
 
 
 # 1) Chargement dataset réel : Adult (Census Income)

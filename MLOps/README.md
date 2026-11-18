@@ -11,21 +11,7 @@ Même API et même modèle que `flask-avance` (TF-IDF + `LogisticRegression`, r�
 
 ## Structure
 
-La structure détaillée est dans [`model-deployment/README.md`](model-deployment/README.md).
-
-```text
-MLOps/
-├── README.md                  ← ce fichier
-└── model-deployment/
-    ├── README.md              ← structure, installation uv, Docker, tests
-    ├── pyproject.toml
-    ├── uv.lock
-    ├── .python-version
-    ├── Dockerfile
-    ├── .dockerignore
-    ├── app.py
-    └── model.py
-```
+Voir [`model-deployment/README.md`](model-deployment/README.md).
 
 ## Avant de lancer : vérifier les ports
 

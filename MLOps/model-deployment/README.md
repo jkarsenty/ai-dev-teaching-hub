@@ -72,11 +72,6 @@ deactivate
 
 L'API écoute sur `http://127.0.0.1:5000`.
 
-## Arrêter l'API
-
-`Ctrl+C` dans le terminal. En mode `debug=True`, Flask démarre un processus fils (reloader) :
-si le port reste occupé après l'arrêt, relance la commande `lsof` ci-dessus puis `kill <PID>`.
-
 ## Lancement avec Docker
 
 Depuis `model-deployment/` :
@@ -106,6 +101,11 @@ Réponse :
 ```
 
 Sans champ `text`, l'API répond `400`.
+
+## Arrêter l'API
+
+`Ctrl+C` dans le terminal. En mode `debug=True`, Flask démarre un processus fils (reloader) :
+si le port reste occupé après l'arrêt, relance la commande `lsof` ci-dessus puis `kill <PID>`.
 
 ## Endpoints
 

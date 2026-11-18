@@ -212,3 +212,6 @@ notes*.txt
 notes*.md
 notes*.ipynb
 notes*/
+# MLOps : fichiers de config à versionner malgré les règles ci-dessus
+!MLOps/**/.python-version
+!MLOps/**/.dockerignore

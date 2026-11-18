@@ -213,3 +213,6 @@ notes*.txt
 notes*.md
 notes*.ipynb
 notes*/
+
+# Fine-tuning
+Fine-Tuning/

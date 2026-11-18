@@ -1,7 +1,0 @@
-model-deployment/
-├── app.py
-├── pyproject.toml
-├── .python-version
-├── models/
-│   └── .gitkeep
-└── README.md

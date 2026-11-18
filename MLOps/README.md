@@ -14,19 +14,6 @@ Volontairement absent sur cette branche : `README` dédié, `requirements.txt`,
 
 Voir [`model-deployment/structure_projet.md`](model-deployment/structure_projet.md).
 
-```text
-MLOps/
-├── README.md                  ← ce fichier
-└── model-deployment/
-    ├── app.py                 ← API Flask (/predict, /health)
-    ├── model.py               ← création / chargement / prédiction
-    ├── model.pkl              ← généré au 1er lancement (non versionné)
-    └── structure_projet.md
-```
-
-> `MLOps/model_deployment/` (avec un underscore) est un squelette à compléter
-> par les étudiants : ce n'est pas le projet de cette branche.
-
 ## Avant de lancer : vérifier les ports
 
 Aucun résultat attendu. Si une ligne s'affiche, le port est déjà pris : arrête le

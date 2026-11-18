@@ -31,3 +31,8 @@ model-deployment/
 ## Ce que cette branche apporte
 
 L'API la plus simple possible autour d'un modèle, sans gestion de dépendances.
+
+## À ne pas confondre
+
+`MLOps/model_deployment/` (avec un underscore) est un squelette à compléter par les
+étudiants : ce n'est pas le projet de cette branche.

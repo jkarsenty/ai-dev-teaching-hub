@@ -15,7 +15,7 @@ toi-même : il n'y a donc **pas de `pyproject.toml`** dans `model-deployment/`
 
 ## Structure
 
-La structure détaillée est dans [`model-deployment/README.md`](model-deployment/README.md).
+Voir [`model-deployment/README.md`](model-deployment/README.md).
 
 ## Avant de lancer : vérifier les ports
 

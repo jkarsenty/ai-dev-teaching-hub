@@ -1,0 +1,12 @@
+.venv
+__pycache__
+*.pyc
+*.pkl
+*.keras
+models/*
+!models/.gitkeep
+.git
+.gitignore
+.dockerignore
+README.md
+examples

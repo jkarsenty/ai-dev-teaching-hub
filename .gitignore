@@ -104,6 +104,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+uv.lock
 
 # Spyder project settings
 .spyderproject
@@ -135,7 +136,7 @@ dmypy.json
 *.pt
 *.onnx
 *.mlmodel
-text_model
+models/
 checkpoints/
 weights/
 *.weights
@@ -212,3 +213,13 @@ notes*.txt
 notes*.md
 notes*.ipynb
 notes*/
+
+# Fine-tuning
+Fine-Tuning/
+
+# MLOps (branches mlops/*)
+MLOps/legacy/
+!MLOps/**/.python-version
+!MLOps/**/.dockerignore
+!MLOps/**/app/models/
+!MLOps/**/api/models/

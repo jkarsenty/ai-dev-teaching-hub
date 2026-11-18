@@ -186,6 +186,12 @@ docker-compose.override.yml
 .project
 .pydevproject
 
+# Fine-Tuning
+Fine-Tuning/
+
+# MLOps
+MLOPS/legacy/
+
 # Streamlit
 .streamlit/
 

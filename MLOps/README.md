@@ -7,12 +7,12 @@ Montrer **l'API la plus simple possible** autour d'un modèle : un fichier `mode
 Le modèle est un `DummyClassifier` : il répond au hasard, l'objectif est la **mécanique**
 (API + modèle sérialisé), pas la qualité de la prédiction.
 
-Volontairement absent sur cette branche : `README` dédié, `requirements.txt`,
-`pyproject.toml`, Docker (ils arrivent avec `flask-avance` puis `flask-avance-uv-docker`).
+Volontairement absent sur cette branche : `requirements.txt`, `pyproject.toml`, Docker
+(ils arrivent avec `flask-avance` puis `flask-avance-uv-docker`).
 
 ## Structure
 
-Voir [`model-deployment/structure_projet.md`](model-deployment/structure_projet.md).
+Voir [`model-deployment/README.md`](model-deployment/README.md).
 
 ## Avant de lancer : vérifier les ports
 
@@ -25,39 +25,8 @@ lsof -nP -iTCP:5000,5001,8000,8501 -sTCP:LISTEN
 
 > Sur macOS, le port **5000** est souvent occupé par *AirPlay Receiver*
 > (processus `ControlCe`). Désactive-le dans Réglages Système → Général →
-> AirDrop et Handoff, ou lance l'API sur 5001.
+> AirDrop et Handoff, ou change le port dans `app.py`.
 
-## Lancer l'API
+## Lancer
 
-Se placer dans le dossier du projet (le `model.pkl` est créé dans le dossier courant) :
-
-```bash
-cd MLOps/model-deployment
-```
-
-Installer les dépendances dans **ton** environnement actif (conda ou venv, jamais le Python global) :
-
-```bash
-pip install flask scikit-learn
-python app.py
-```
-
-L'API écoute sur `http://127.0.0.1:5000`.
-
-## Arrêter l'API
-
-`Ctrl+C` dans le terminal. En mode `debug=True`, Flask démarre un processus fils (reloader) :
-si le port reste occupé après l'arrêt, relance la commande `lsof` ci-dessus puis `kill <PID>`.
-
-## Tester
-
-```bash
-curl http://127.0.0.1:5000/health
-
-curl -X POST http://127.0.0.1:5000/predict \
-  -H "Content-Type: application/json" \
-  -d '{"text": "I love this product"}'
-```
-
-Réponse attendue : `{"text": "I love this product", "sentiment": "positive"}`
-(ou `negative` : le modèle est aléatoire). Sans champ `text`, l'API répond `400`.
+Voir [`model-deployment/README.md`](model-deployment/README.md).

@@ -1,56 +1,53 @@
+# Sentiment API — Flask simple
 
+API REST minimale autour d'un modèle (`DummyClassifier`, réponses aléatoires) servie avec Flask.
+Pas de gestion de dépendances ni de Docker sur cette branche.
 
-## Structure
-
-Voir [`model-deployment/structure_projet.md`](model-deployment/structure_projet.md).
+## Structure du projet
 
 ```text
-MLOps/
-├── README.md                  ← ce fichier
-└── model-deployment/
-    ├── app.py                 ← API Flask (/predict, /health)
-    ├── model.py               ← création / chargement / prédiction
-    ├── model.pkl              ← généré au 1er lancement (non versionné)
-    └── structure_projet.md
+model-deployment/
+├── README.md    # ce fichier
+├── app.py       # API Flask (/predict, /health)
+├── model.py     # création / chargement / prédiction
+└── model.pkl    # généré au 1er lancement (non versionné)
 ```
 
-> `MLOps/model_deployment/` (avec un underscore) est un squelette à compléter
-> par les étudiants : ce n'est pas le projet de cette branche.
+| Fichier | Rôle |
+|---|---|
+| `app.py` | Routes `POST /predict` et `GET /health` |
+| `model.py` | `create_model()`, `load_model()`, `predict()` ; modèle sérialisé avec `pickle` |
+| `model.pkl` | Modèle sauvegardé. Supprime-le pour le recréer |
 
-## Avant de lancer : vérifier les ports
+## Prérequis
 
-Aucun résultat attendu. Si une ligne s'affiche, le port est déjà pris : arrête le
-processus (`kill <PID>`) ou change de port.
+1. **Ports libres** (aucun résultat attendu) :
+   ```bash
+   lsof -nP -iTCP:5000,5001,8000,8501 -sTCP:LISTEN
+   ```
+   Sur macOS, le port 5000 est parfois pris par *AirPlay Receiver* (`ControlCe`).
 
-```bash
-lsof -nP -iTCP:5000,5001,8000,8501 -sTCP:LISTEN
-```
+2. **Être dans le bon dossier** : `model.pkl` est créé dans le dossier courant. Le chemin du
+   repo contient des espaces : mets-le entre guillemets.
+   ```bash
+   cd "<chemin du repo>/MLOps/model-deployment"
+   ls app.py model.py     # les 2 fichiers doivent s'afficher
+   ```
+3. **Un environnement Python actif** (venv ou conda, jamais le Python global).
 
-> Sur macOS, le port **5000** est souvent occupé par *AirPlay Receiver*
-> (processus `ControlCe`). Désactive-le dans Réglages Système → Général →
-> AirDrop et Handoff, ou lance l'API sur 5001.
-
-## Lancer l'API
-
-Se placer dans le dossier du projet (le `model.pkl` est créé dans le dossier courant) :
-
-```bash
-cd MLOps/model-deployment
-```
-
-Installer les dépendances dans **ton** environnement actif (conda ou venv, jamais le Python global) :
+## Installation
 
 ```bash
 pip install flask scikit-learn
+```
+
+## Lancer l'API
+
+```bash
 python app.py
 ```
 
 L'API écoute sur `http://127.0.0.1:5000`.
-
-## Arrêter l'API
-
-`Ctrl+C` dans le terminal. En mode `debug=True`, Flask démarre un processus fils (reloader) :
-si le port reste occupé après l'arrêt, relance la commande `lsof` ci-dessus puis `kill <PID>`.
 
 ## Tester
 
@@ -62,5 +59,22 @@ curl -X POST http://127.0.0.1:5000/predict \
   -d '{"text": "I love this product"}'
 ```
 
-Réponse attendue : `{"text": "I love this product", "sentiment": "positive"}`
-(ou `negative` : le modèle est aléatoire). Sans champ `text`, l'API répond `400`.
+Réponse (`negative` possible : le modèle est aléatoire) :
+
+```json
+{"text": "I love this product", "sentiment": "positive"}
+```
+
+Sans champ `text`, l'API répond `400`.
+
+## Arrêter l'API
+
+`Ctrl+C` dans le terminal. En mode `debug=True`, Flask démarre un processus fils (reloader) :
+si le port reste occupé après l'arrêt, relance la commande `lsof` ci-dessus puis `kill <PID>`.
+
+## Endpoints
+
+| Méthode | Route | Corps | Réponse |
+|---|---|---|---|
+| `GET` | `/health` | — | `{"status": "ok"}` |
+| `POST` | `/predict` | `{"text": "..."}` | `{"text", "sentiment"}` |

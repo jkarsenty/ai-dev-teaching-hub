@@ -28,6 +28,7 @@ model-deployment/
    lsof -nP -iTCP:5000,5001,8000,8501 -sTCP:LISTEN
    ```
    Sur macOS, le port 5000 est parfois pris par *AirPlay Receiver* (`ControlCe`).
+
 2. **Être dans le bon dossier** : toutes les commandes se lancent depuis `MLOps/model-deployment/`
    (le chemin du repo contient des espaces : mets-le entre guillemets).
    ```bash

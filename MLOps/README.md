@@ -17,16 +17,6 @@ toi-même : il n'y a donc **pas de `pyproject.toml`** dans `model-deployment/`
 
 La structure détaillée est dans [`model-deployment/README.md`](model-deployment/README.md).
 
-```text
-MLOps/
-├── README.md                  ← ce fichier
-└── model-deployment/
-    ├── README.md              ← structure, installation, commandes
-    ├── requirements.txt
-    ├── app.py
-    └── model.py
-```
-
 ## Avant de lancer : vérifier les ports
 
 Aucun résultat attendu. Si une ligne s'affiche, le port est déjà pris : arrête le

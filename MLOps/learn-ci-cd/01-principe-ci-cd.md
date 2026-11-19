@@ -66,4 +66,4 @@ Voir [learn-git/03-branches.md](../learn-git/03-branches.md).
 | GitLab | GitLab CI | `.gitlab-ci.yml` |
 | Forgejo | Forgejo Actions (proche de GitHub) | `.forgejo/workflows/*.yml` |
 
-Ce guide utilise **GitHub Actions**.
+Ce guide détaille **GitHub Actions** (pages 2-3) puis **GitLab CI** ([page 4](04-gitlab-ci.md)), le plus répandu en entreprise.

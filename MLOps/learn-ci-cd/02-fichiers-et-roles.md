@@ -1,5 +1,7 @@
 # 2. Les fichiers à ajouter et leur rôle
 
+> Cette page décrit la version **GitHub Actions**. Sur GitLab, le pipeline tient dans un seul `.gitlab-ci.yml` : voir [04-gitlab-ci.md](04-gitlab-ci.md).
+
 ## Vue d'ensemble (projet type de ce repo)
 
 ```text

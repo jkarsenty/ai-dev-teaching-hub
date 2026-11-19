@@ -42,6 +42,8 @@ model-deployment/
    > depuis le dossier courant. Depuis la racine du repo, il prendrait le `pyproject.toml`
    > du projet racine (pandas, matplotlib…, sans Flask) et créerait un `.venv` à la racine.
    > Et `model.pkl` est créé dans le dossier courant.
+   > possible que le uv.lock apparaisse pas si c'est la première fois que tu lances uv, il sera créé après le premier `uv sync`.
+   
 4. **Docker** (uniquement pour la partie conteneur) : Docker Desktop démarré, `docker info` sans erreur.
 
 ## Lancement local avec uv

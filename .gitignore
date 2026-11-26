@@ -215,7 +215,7 @@ notes*.ipynb
 notes*/
 
 # Fine-tuning
-Fine-Tuning/
+Fine-Tuning/Old-Sessions
 
 # MLOps
 MLOps/legacy/

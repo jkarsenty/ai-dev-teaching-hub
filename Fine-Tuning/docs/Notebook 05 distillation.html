@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notebook 05 distillation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Plan : neutres légèrement bleutés, un accent bleu profond ; IBM Plex Sans pour le texte, Plex Mono pour le code ;
+   mise en page : colonne de lecture de 760px avec sommaire en tête, schémas pleine colonne. */
+:root {
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --ink: #15191f;
+  --quiet: #566070;
+  --rule: #dfe3ea;
+  --accent: #1f5fbf;
+  --accent-tint: rgba(31, 95, 191, 0.1);
+  --edge: #8892a2;
+  --code-bg: #eef1f6;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161c; --surface: #1a2029; --ink: #e8ecf2; --quiet: #9aa5b6; --rule: #2b3340;
+    --accent: #6ea4ff; --accent-tint: rgba(110, 164, 255, 0.14); --edge: #6f7a8c; --code-bg: #20272f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf2; --quiet: #9aa5b6; --rule: #2b3340;
+  --accent: #6ea4ff; --accent-tint: rgba(110, 164, 255, 0.14); --edge: #6f7a8c; --code-bg: #20272f;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; }
+main { max-width: 800px; margin: 0 auto; padding: 32px 20px 72px; }
+header h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 8px; font-weight: 600; text-wrap: balance; }
+header .lead { color: var(--quiet); margin: 0 0 20px; font-size: 1.05rem; max-width: 65ch; }
+nav.toc { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 20px; margin-bottom: 8px; }
+nav.toc strong { display: block; margin-bottom: 8px; font-size: 0.85rem; color: var(--quiet); letter-spacing: 0.02em; }
+nav.toc ol { margin: 0; padding-left: 1.4em; columns: 2 280px; column-gap: 32px; }
+nav.toc li { margin: 2px 0; break-inside: avoid; }
+nav.toc a { color: var(--ink); text-decoration: none; }
+nav.toc a:hover { color: var(--accent); text-decoration: underline; }
+section { padding-top: 40px; }
+h2 { font-size: 1.5rem; line-height: 1.3; margin: 0 0 12px; font-weight: 600; text-wrap: balance; scroll-margin-top: 16px; }
+h3 { font-size: 1.1rem; margin: 28px 0 8px; font-weight: 600; text-wrap: balance; }
+p, ul, ol { max-width: 68ch; }
+p { margin: 0 0 12px; }
+ul { padding-left: 1.3em; margin: 0 0 12px; }
+li { margin: 4px 0; }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; overflow-x: auto; margin: 0 0 14px; font-size: 0.85rem; line-height: 1.55; }
+pre code { background: none; padding: 0; font-size: inherit; }
+.tablewrap { overflow-x: auto; margin: 0 0 16px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { background: var(--code-bg); font-weight: 600; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+figure { margin: 18px 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 12px; overflow-x: auto; }
+figure svg { display: block; width: 100%; min-width: 560px; height: auto; }
+figcaption { color: var(--quiet); font-size: 0.82rem; margin-top: 6px; padding: 0 4px; }
+.eq { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; margin: 0 0 14px; overflow-x: auto; font-size: 1.15rem; }
+.eq math { display: block; }
+.say { border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; margin: 14px 0; max-width: 68ch; }
+svg text { font-family: var(--font-body); }
+svg .t { fill: var(--ink); }
+svg .q { fill: var(--quiet); }
+svg .n { font-weight: 600; }
+svg .bx { fill: none; stroke: var(--edge); stroke-width: 1.25; }
+svg .ba { fill: var(--accent-tint); stroke: var(--accent); stroke-width: 2; }
+svg .ln { fill: none; stroke: var(--edge); stroke-width: 1.25; }
+svg .grid { stroke: var(--rule); }
+svg .axis { stroke: var(--edge); }
+svg .mk { fill: var(--edge); }
+@media print {
+  body { background: #fff; color: #000; }
+  nav.toc { display: none; }
+  section { break-inside: auto; padding-top: 24px; }
+  figure, .tablewrap, pre { break-inside: avoid; }
+}
+@media (max-width: 480px) { header h1 { font-size: 1.6rem; } main { padding-left: 16px; padding-right: 16px; } }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Notebook 05 : distillation, schémas et notions</h1>
+  <p class="lead">La distillation transfère un comportement (les sorties d’un gros modèle) vers un petit modèle : voici le notebook 5 en schémas, notions, code, résultats et questions probables.</p>
+  <nav class="toc" aria-label="Sommaire">
+    <strong>Sommaire</strong>
+    <ol>
+      <li><a href="#s1">Vue d’ensemble</a></li>
+      <li><a href="#s2">L’idée centrale</a></li>
+      <li><a href="#s3">Le montage d’un pas d’entraînement</a></li>
+      <li><a href="#s4">Soft targets et température</a></li>
+      <li><a href="#s5">La loss terme par terme</a></li>
+      <li><a href="#s6">Le code pas à pas</a></li>
+      <li><a href="#s7">Le student</a></li>
+      <li><a href="#s8">Les résultats</a></li>
+      <li><a href="#s9">Peut-on se fier au +1,8 point ?</a></li>
+      <li><a href="#s10">Les familles de distillation</a></li>
+      <li><a href="#s11">Diffusion : LCM-LoRA</a></li>
+      <li><a href="#s12">Les pièges et leurs correctifs</a></li>
+      <li><a href="#s13">Pont avec le notebook 1</a></li>
+      <li><a href="#s14">Les exercices à la maison</a></li>
+      <li><a href="#s15">Questions probables</a></li>
+      <li><a href="#s16">À corriger dans le notebook</a></li>
+    </ol>
+  </nav>
+</header>
+
+<section id="s1">
+  <h2>Vue d’ensemble</h2>
+  <figure id="fig-overview"></figure>
+  <p>Le notebook suit une chaîne simple : on fine-tune un teacher (acquis du notebook 1), on le fige, puis on entraîne deux petits students avec le même budget, l’un avec la loss de distillation, l’autre avec la cross-entropy seule. Seule la loss les distingue, et c’est ce que compare la dernière étape.</p>
+</section>
+
+<section id="s2">
+  <h2>L’idée centrale : transférer un comportement</h2>
+  <figure id="fig-etat"></figure>
+  <p>Au notebook 1, on repartait des poids d’un modèle et on les adaptait. Ici le student n’en reçoit aucun : il apprend à reproduire ce que produit le teacher, et sa taille comme son architecture sont libres.</p>
+  <ul>
+    <li><strong>Pourquoi ça marche</strong> : les probabilités du teacher contiennent plus d’information qu’une étiquette (voir la section sur les soft targets).</li>
+    <li><strong>À quoi ça sert</strong> : obtenir un modèle plus petit ou plus rapide, pour un coût d’inférence réduit.</li>
+    <li><strong>Ce que ça ne fait pas</strong> : la distillation ne rend pas le student meilleur que le teacher, elle vise à s’en approcher avec moins de moyens.</li>
+  </ul>
+</section>
+
+<section id="s3">
+  <h2>Le montage d’un pas d’entraînement</h2>
+  <figure id="fig-pas"></figure>
+  <p>La même image <code>x</code> passe dans les deux réseaux. Chaque réseau produit des logits (<code>v</code> pour le teacher, <code>z</code> pour le student), qu’on adoucit avec T pour obtenir <code>p</code> et <code>q</code>. La loss compare <code>p</code> et <code>q</code>, compare aussi <code>z</code> à l’étiquette <code>y</code>, puis mélange les deux.</p>
+  <h3>Glossaire des lettres</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Lettre</th><th>Signification</th><th>Où elle apparaît dans le code</th></tr></thead>
+    <tbody>
+      <tr><td><code>x</code></td><td>un batch d’images normalisées</td><td><code>x, y = x.to(device), y.to(device)</code></td></tr>
+      <tr><td><code>y</code></td><td>les étiquettes vraies</td><td>argument <code>targets</code></td></tr>
+      <tr><td><code>v</code></td><td>logits du teacher, avant softmax</td><td><code>teacher_logits</code></td></tr>
+      <tr><td><code>z</code></td><td>logits du student, avant softmax</td><td><code>student_logits</code></td></tr>
+      <tr><td><code>T</code></td><td>température (4,0), seulement à l’entraînement</td><td><code>student_logits / T</code></td></tr>
+      <tr><td><code>p</code></td><td>probabilités douces du teacher, <code>softmax(v / T)</code></td><td><code>soft_teacher</code></td></tr>
+      <tr><td><code>q</code></td><td>probabilités douces du student, <code>softmax(z / T)</code></td><td><code>soft_student</code> (en log)</td></tr>
+      <tr><td><code>α</code></td><td>poids du terme de distillation (0,7)</td><td><code>alpha</code></td></tr>
+      <tr><td><code>N</code></td><td>nombre de classes (10)</td><td>dimension 1 des logits</td></tr>
+      <tr><td><code>L</code></td><td>la loss totale, celle qu’on rétropropage</td><td>valeur retournée par <code>distillation_loss</code></td></tr>
+    </tbody>
+  </table></div>
+  <p class="say"><strong>Comment le dire à l’oral</strong> : « le teacher et le student voient la même image ; on compare leurs sorties adoucies, et on compare aussi le student à la vérité ».</p>
+</section>
+
+<section id="s4">
+  <h2>Soft targets, dark knowledge et température</h2>
+  <p>Un label dur est un vecteur <code>[0, 1, 0, …, 0]</code> : il dit quelle classe est la bonne, mais rien sur celles qui lui ressemblent. La sortie du teacher ressemble plutôt à <code>[0,02 ; 0,90 ; 0,06 ; …]</code> : ses petites probabilités sur les mauvaises classes disent lesquelles se ressemblent. Hinton appelle ça la <em>dark knowledge</em>, et ces sorties les <em>soft targets</em>.</p>
+  <p>Le problème : sur une image facile, le teacher est si sûr de lui que les autres classes tombent presque à zéro. La <strong>température T</strong> sert à les révéler : on divise les logits par T avant le softmax.</p>
+  <ul>
+    <li><strong>T = 1</strong> : softmax normal.</li>
+    <li><strong>T &gt; 1</strong> : les logits se rapprochent avant l’exponentielle, la distribution s’aplatit.</li>
+    <li><strong>T → ∞</strong> : tout tend vers l’uniforme.</li>
+    <li><strong>T &lt; 1</strong> : on durcit, le pic s’accentue.</li>
+  </ul>
+  <h3>Les chiffres du notebook</h3>
+  <p>Même image de validation, sortie du teacher à deux températures (les quatre classes les plus probables) :</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Classe</th><th>T = 1</th><th>T = 4</th></tr></thead>
+    <tbody>
+      <tr><td>AnnualCrop</td><td>0,987</td><td>0,387</td></tr>
+      <tr><td>HerbaceousVegetation</td><td>0,004</td><td>0,095</td></tr>
+      <tr><td>River</td><td>0,003</td><td>0,092</td></tr>
+      <tr><td>Highway</td><td>0,002</td><td>0,080</td></tr>
+    </tbody>
+  </table></div>
+  <p>À T = 1, les trois classes suivantes ne portent ensemble que 0,9 % de la probabilité. À T = 4, elles en portent 26,7 % : c’est cette structure, devenue lisible, que le student va imiter.</p>
+  <ul>
+    <li><strong>Deux images de la même classe n’ont pas la même soft target</strong> : l’une penche un peu vers « herbacé », l’autre vers « rivière ». Le student apprend cette nuance continue, plus riche qu’un label binaire répété.</li>
+    <li><strong>T ne sert qu’à l’entraînement</strong> : le student déployé prédit avec un softmax normal (T = 1).</li>
+  </ul>
+</section>
+
+<section id="s5">
+  <h2>La loss terme par terme</h2>
+  <p>La loss de distillation mélange deux objectifs : imiter le teacher, et rester fidèle aux vraies étiquettes.</p>
+  <div class="eq" role="math" aria-label="L égale alpha fois T au carré fois KL de p contre q, plus un moins alpha fois CE de z et y">
+    <math display="block"><mrow>
+      <mi mathvariant="script">L</mi><mo>=</mo><mi>α</mi><mo>·</mo><msup><mi>T</mi><mn>2</mn></msup><mo>·</mo><mi>KL</mi><mo>(</mo><mi>p</mi><mo>‖</mo><mi>q</mi><mo>)</mo>
+      <mo>+</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>α</mi><mo>)</mo><mo>·</mo><mi>CE</mi><mo>(</mo><mi>z</mi><mo>,</mo><mi>y</mi><mo>)</mo>
+    </mrow></math>
+    <math display="block"><mrow>
+      <mi>p</mi><mo>=</mo><mi>softmax</mi><mo>(</mo><mfrac><mi>v</mi><mi>T</mi></mfrac><mo>)</mo><mo>,</mo><mspace width="1.5em"/>
+      <mi>q</mi><mo>=</mo><mi>softmax</mi><mo>(</mo><mfrac><mi>z</mi><mi>T</mi></mfrac><mo>)</mo>
+    </mrow></math>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Terme</th><th>Rôle</th><th>Valeur dans le notebook</th></tr></thead>
+    <tbody>
+      <tr><td><code>KL(p ‖ q)</code></td><td>reproduire la forme de la sortie du teacher, dark knowledge comprise</td><td>teacher et student adoucis au même T</td></tr>
+      <tr><td><code>T²</code></td><td>rattraper l’échelle du terme soft</td><td>T = 4, donc facteur 16</td></tr>
+      <tr><td><code>CE(z, y)</code></td><td>garde-fou : le teacher se trompe parfois</td><td>logits du student à T = 1</td></tr>
+      <tr><td><code>α</code></td><td>dose entre imiter et coller aux étiquettes</td><td>0,7</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Dériver le facteur T²</h3>
+  <p>Le gradient exact de la KL soft par rapport au logit <code>z_i</code> du student est :</p>
+  <div class="eq" role="math" aria-label="dérivée de KL de p contre q par rapport à z_i égale un sur T fois q_i moins p_i">
+    <math display="block"><mrow>
+      <mfrac><mrow><mo>∂</mo><mi>KL</mi><mo>(</mo><mi>p</mi><mo>‖</mo><mi>q</mi><mo>)</mo></mrow><mrow><mo>∂</mo><msub><mi>z</mi><mi>i</mi></msub></mrow></mfrac>
+      <mo>=</mo><mfrac><mn>1</mn><mi>T</mi></mfrac><mo>(</mo><msub><mi>q</mi><mi>i</mi></msub><mo>−</mo><msub><mi>p</mi><mi>i</mi></msub><mo>)</mo>
+    </mrow></math>
+  </div>
+  <p>Avec le facteur <code>T²</code>, il devient <code>T·(q_i − p_i)</code>. À température élevée et avec des logits centrés, <code>exp(x) ≈ 1 + x</code> donne :</p>
+  <div class="eq" role="math" aria-label="T fois q_i moins p_i vaut environ z_i moins v_i sur N">
+    <math display="block"><mrow>
+      <mi>T</mi><mo>(</mo><msub><mi>q</mi><mi>i</mi></msub><mo>−</mo><msub><mi>p</mi><mi>i</mi></msub><mo>)</mo><mo>≈</mo>
+      <mfrac><mrow><msub><mi>z</mi><mi>i</mi></msub><mo>−</mo><msub><mi>v</mi><mi>i</mi></msub></mrow><mi>N</mi></mfrac>
+    </mrow></math>
+  </div>
+  <p>Le terme soft devient alors un <strong>matching de logits</strong> (une MSE entre <code>z</code> et <code>v</code>), et il ne dépend plus de T. C’est le rôle du <code>T²</code> : sans lui, le gradient soft décroît en <code>1/T²</code> et la CE finit par dominer, sans aucune erreur visible.</p>
+  <p>Vérification numérique (logits tirés au hasard, N = 10) : l’écart relatif entre le gradient exact et cette approximation vaut environ :</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>T</th><th>1</th><th>4</th><th>10</th><th>50</th></tr></thead>
+    <tbody><tr><td>Écart relatif</td><td>79 %</td><td>27 %</td><td>12 %</td><td>2 %</td></tr></tbody>
+  </table></div>
+  <p>À T = 4 avec 10 classes, on est donc entre les deux régimes : ni du pur matching de logits, ni du softmax classique. C’est le régime intermédiaire que Hinton recommande pour de petits students (T entre 2,5 et 4).</p>
+
+  <h3>KL et cross-entropy</h3>
+  <div class="eq" role="math" aria-label="KL de p contre q égale CE de p et q moins H de p">
+    <math display="block"><mrow>
+      <mi>KL</mi><mo>(</mo><mi>p</mi><mo>‖</mo><mi>q</mi><mo>)</mo><mo>=</mo><mi>CE</mi><mo>(</mo><mi>p</mi><mo>,</mo><mi>q</mi><mo>)</mo><mo>−</mo><mi>H</mi><mo>(</mo><mi>p</mi><mo>)</mo>
+    </mrow></math>
+  </div>
+  <p>Le teacher est figé, donc <code>H(p)</code> est une constante qui ne change pas le gradient : minimiser la KL revient à minimiser une cross-entropy avec cibles souples. C’est une <em>forward KL</em> (le teacher en premier), qui force le student à couvrir tout ce que le teacher juge plausible.</p>
+
+  <h3>Une nuance à connaître</h3>
+  <p>Le notebook écrit que les gradients soft sont « proportionnels à 1/T² ». C’est vrai à T élevé ; le gradient exact est en <code>1/T</code>, comme ci-dessus.</p>
+</section>
+
+<section id="s6">
+  <h2>Le code pas à pas</h2>
+  <h3>La loss</h3>
+<pre><code>kl_div = nn.KLDivLoss(reduction="batchmean")
+
+def distillation_loss(student_logits, teacher_logits, targets, T, alpha):
+    soft_student = F.log_softmax(student_logits / T, dim=1)   # log-probabilités
+    soft_teacher = F.softmax(teacher_logits / T, dim=1)       # probabilités
+    soft_loss = kl_div(soft_student, soft_teacher) * (T * T)  # le facteur T²
+    hard_loss = F.cross_entropy(student_logits, targets)      # garde-fou
+    return alpha * soft_loss + (1.0 - alpha) * hard_loss</code></pre>
+  <p>Trois lignes portent la distillation : le <code>log_softmax</code> du student, le <code>softmax</code> du teacher (les deux divisés par T), et la multiplication par <code>T * T</code>. La dernière ligne mélange le terme soft et la cross-entropy avec <code>alpha</code>.</p>
+  <h3>La boucle</h3>
+<pre><code>teacher.eval()                                # figé
+for x, y in train_loader:
+    x, y = x.to(device), y.to(device)
+    optimizer.zero_grad()
+    student_logits = student(x)
+    if use_distillation:
+        with torch.no_grad():
+            teacher_logits = teacher(x)           # même x que le student
+        loss = distillation_loss(student_logits, teacher_logits, y, T, ALPHA)
+    else:
+        loss = F.cross_entropy(student_logits, y) # témoin sans distillation
+    loss.backward()
+    optimizer.step()</code></pre>
+  <p>C’est la boucle du notebook 1 (<code>zero_grad</code>, forward, loss, <code>backward</code>, <code>step</code>). Une seule chose change : la loss, ce qui oblige à calculer aussi la sortie du teacher à chaque batch. Le teacher ne reçoit aucun gradient. La même fonction <code>train_student(use_distillation, seed)</code> entraîne le student distillé et le témoin : même initialisation, même ordre des données, même budget d’epochs. Seule la loss diffère, ce qui rend la comparaison honnête.</p>
+  <h3>Les réglages</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Réglage</th><th>Valeur</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>TRAIN_PER_CLASS</code>, <code>VAL_PER_CLASS</code></td><td>300, 80</td><td>3 000 images d’entraînement, 800 de validation</td></tr>
+      <tr><td><code>BATCH_SIZE</code></td><td>64</td><td>taille de batch</td></tr>
+      <tr><td><code>EPOCHS_TEACHER</code>, <code>LR_TEACHER</code></td><td>5, 3e-4</td><td>le teacher part d’ImageNet, il lui faut peu d’epochs</td></tr>
+      <tr><td><code>EPOCHS_STUDENT</code>, <code>LR_STUDENT</code></td><td>30, 1e-3</td><td>le student part de zéro, il lui en faut nettement plus</td></tr>
+      <tr><td><code>STUDENT_WIDTH</code></td><td>16</td><td>largeur du premier bloc, doublée à chaque bloc</td></tr>
+      <tr><td><code>T</code>, <code>ALPHA</code></td><td>4,0 ; 0,7</td><td>température et poids du terme de distillation</td></tr>
+      <tr><td><code>LIGHT</code></td><td><code>False</code></td><td><code>True</code> pour un run éclair (résultats non exploitables)</td></tr>
+    </tbody>
+  </table></div>
+  <p>Les deux entraînements utilisent Adam avec un learning rate décroissant en cosinus.</p>
+</section>
+
+<section id="s7">
+  <h2>Le student : un petit CNN entraîné de zéro</h2>
+  <p>Le student a sa propre architecture, aucun poids pré-entraîné, et prend la même entrée que le teacher (224 × 224, normalisation ImageNet), ce qui rend leurs sorties comparables batch par batch.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Étage</th><th>Opération</th><th>Sortie</th><th>Paramètres</th></tr></thead>
+    <tbody>
+      <tr><td>Entrée</td><td>image normalisée</td><td>3 × 224 × 224</td><td>0</td></tr>
+      <tr><td>Bloc 1</td><td>conv 3×3 stride 2, BatchNorm, ReLU</td><td>16 × 112 × 112</td><td>464</td></tr>
+      <tr><td>Bloc 2</td><td>idem</td><td>32 × 56 × 56</td><td>4 672</td></tr>
+      <tr><td>Bloc 3</td><td>idem</td><td>64 × 28 × 28</td><td>18 560</td></tr>
+      <tr><td>Bloc 4</td><td>idem</td><td>128 × 14 × 14</td><td>73 984</td></tr>
+      <tr><td>Pooling global</td><td>moyenne sur l’espace</td><td>128</td><td>0</td></tr>
+      <tr><td>Sortie</td><td><code>Linear(128 → 10)</code></td><td>10 logits</td><td>1 290</td></tr>
+      <tr><td><strong>Total</strong></td><td></td><td></td><td><strong>98 970</strong></td></tr>
+    </tbody>
+  </table></div>
+  <p>Vérification du compte : le bloc 1 vaut 3 × 16 × 9 = 432 poids de convolution plus 32 de BatchNorm (γ et β), soit 464. Les convolutions n’ont pas de biais, car la BatchNorm qui suit les rend inutiles. La head vaut 128 × 10 + 10 = 1 290.</p>
+  <h3>Teacher contre student</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Teacher</th><th>Student</th></tr></thead>
+    <tbody>
+      <tr><td>Architecture</td><td>ResNet-18, blocs résiduels</td><td>4 blocs conv, rien de résiduel</td></tr>
+      <tr><td>Point de départ</td><td>poids ImageNet, puis fine-tuning</td><td>zéro, tout est aléatoire</td></tr>
+      <tr><td>Paramètres</td><td>11 181 642</td><td>98 970 (113 fois moins)</td></tr>
+      <tr><td>Taille sur disque</td><td>44,8 Mo</td><td>0,4 Mo</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Question que le public va poser</strong> : « on vient de dire de ne jamais repartir de zéro ». Réponse : ici l’objectif n’est pas la meilleure accuracy, c’est un modèle minuscule et rapide. Aucun modèle pré-entraîné n’a cette taille et cette architecture, et c’est précisément un student contraint en capacité, le cas où la distillation aide le plus.</p>
+</section>
+
+<section id="s8">
+  <h2>Les résultats</h2>
+  <p>Trois modèles, mesurés sur les mêmes 800 images de validation.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Modèle</th><th>Accuracy</th><th>Paramètres</th><th>Taille</th><th>Latence</th><th>Temps d’entraînement</th></tr></thead>
+    <tbody>
+      <tr><td>Teacher (ResNet-18)</td><td>96,9 %</td><td>11 181 642</td><td>44,8 Mo</td><td>1,80 ms</td><td>1 343,9 s (5 epochs)</td></tr>
+      <tr><td>Student distillé</td><td>71,6 %</td><td>98 970</td><td>0,4 Mo</td><td>0,41 ms</td><td>190,6 s (30 epochs)</td></tr>
+      <tr><td>Student sans distillation</td><td>69,9 %</td><td>98 970</td><td>0,4 Mo</td><td>0,41 ms</td><td>102,9 s (30 epochs)</td></tr>
+    </tbody>
+  </table></div>
+  <figure id="fig-chart"></figure>
+  <p>Ce qu’il faut lire dans ces chiffres :</p>
+  <ul>
+    <li><strong>Le compromis est honnête</strong> : le student est environ 113 fois plus petit et 4,4 fois plus rapide, mais il perd 25 points d’accuracy par rapport au teacher. La distillation ne fait pas de miracle.</li>
+    <li><strong>Le gain de la distillation est mince</strong> : 1,8 point sur le témoin (voir la section sur l’incertitude).</li>
+    <li><strong>Elle coûte plus cher à entraîner</strong> : 190,6 s contre 102,9 s, soit près du double, à cause de la passe du teacher à chaque batch.</li>
+    <li><strong>La loss n’est pas comparable</strong> entre les deux courbes (2,07 contre 0,45 en fin d’entraînement) : la loss de distillation contient un terme KL multiplié par T² ; seule l’accuracy se compare.</li>
+  </ul>
+</section>
+
+<section id="s9">
+  <h2>Peut-on se fier au +1,8 point ?</h2>
+  <p>Pas sur ces chiffres seuls : l’écart est du même ordre que le bruit de mesure. C’est le point le plus fragile du notebook, et celui où un public de développeurs ML posera une question. Leur propre checklist du notebook 1 le dit : plusieurs seeds avant de conclure à 1 point d’écart.</p>
+  <h3>Le calcul</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Grandeur</th><th>Valeur</th></tr></thead>
+    <tbody>
+      <tr><td>Images de validation</td><td>800</td></tr>
+      <tr><td>Accuracy du student distillé</td><td>71,6 %</td></tr>
+      <tr><td>Accuracy du témoin sans distillation</td><td>69,9 %</td></tr>
+      <tr><td>Écart observé</td><td>environ 1,8 point, soit une quinzaine d’images sur 800</td></tr>
+      <tr><td>Erreur standard d’une accuracy (binomiale)</td><td>√(0,716 × 0,284 / 800) ≈ 1,6 point</td></tr>
+      <tr><td>Intervalle à 95 % de chaque accuracy</td><td>environ ± 3 points</td></tr>
+      <tr><td>Erreur standard de l’écart (deux mesures indépendantes)</td><td>environ 2,3 points</td></tr>
+    </tbody>
+  </table></div>
+  <div class="eq" role="math" aria-label="erreur standard égale racine de 0,716 fois 0,284 sur 800, environ 1,6 point">
+    <math display="block"><mrow>
+      <mi>SE</mi><mo>=</mo>
+      <msqrt><mfrac><mrow><mn>0,716</mn><mo>×</mo><mn>0,284</mn></mrow><mn>800</mn></mfrac></msqrt>
+      <mo>≈</mo><mn>1,6</mn><mtext> point</mtext>
+    </mrow></math>
+  </div>
+  <p>L’écart observé est plus petit que l’erreur standard de l’écart. Les deux modèles sont évalués sur les mêmes images, donc un test apparié serait plus fin, mais il demande les prédictions image par image, que le notebook ne conserve pas.</p>
+  <h3>Un autre signal : les courbes se croisent</h3>
+  <p>Sur les 7 points relevés pendant l’entraînement (epochs 1, 5, 10, 15, 20, 25 et 30), le témoin est devant la distillation à 4 d’entre eux (par exemple 73,0 % contre 71,8 % à l’epoch 20). La distillation ne passe devant qu’à la fin. La courbe est dans la section des résultats.</p>
+  <h3>Comment le démontrer proprement</h3>
+  <ul>
+    <li><strong>Plusieurs seeds</strong> (par exemple 5) pour chaque méthode, puis moyenne et écart-type.</li>
+    <li><strong>Conserver les prédictions</strong> image par image pour un test de McNemar apparié.</li>
+    <li><strong>Un jeu de validation plus grand</strong>, ou le jeu de test EuroSAT complet.</li>
+    <li><strong>Balayer le nombre de données</strong> (exercice 5) : la distillation doit aider surtout quand les données sont rares.</li>
+  </ul>
+  <h3>Comment le présenter en live</h3>
+  <p class="say">« Un petit gain, dans la marge de bruit sur une seule seed : c’est exactement pourquoi on garde un témoin, et pourquoi la checklist du notebook 1 demande plusieurs seeds. » Le notebook parle de « quelques points » : le chiffre mesuré est plutôt 1,8.</p>
+</section>
+
+<section id="s10">
+  <h2>Les familles de distillation</h2>
+  <p>Ce que fait le notebook (imiter les sorties du teacher) est la distillation <em>response-based</em>, la plus simple et la plus courante. Trois familles se distinguent par ce que le student imite :</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Famille</th><th>Ce que le student imite</th><th>Idée</th><th>Coût</th></tr></thead>
+    <tbody>
+      <tr><td>Response-based (ce notebook)</td><td>les logits ou probabilités de sortie</td><td>dark knowledge de la distribution finale</td><td>simple, le teacher peut être une boîte noire</td></tr>
+      <tr><td>Feature-based</td><td>les activations intermédiaires</td><td>aligner les représentations internes</td><td>il faut ouvrir le teacher et projeter les dimensions</td></tr>
+      <tr><td>Relation-based</td><td>les relations entre exemples (matrice de similarités d’un batch)</td><td>reproduire la géométrie apprise</td><td>plus riche, plus délicat à régler</td></tr>
+    </tbody>
+  </table></div>
+  <p>Deux autres axes pour situer une méthode :</p>
+  <ul>
+    <li><strong>Task-specific ou task-agnostic.</strong> Le notebook distille pour une tâche (EuroSAT). DistilBERT et DistilCamemBERT distillent le modèle de langue pendant le pré-entraînement, et donnent un petit modèle généraliste qu’on fine-tune ensuite comme n’importe quel encodeur.</li>
+    <li><strong>Self-distillation.</strong> Teacher et student ont la même architecture : un modèle se distille depuis une version antérieure de lui-même. Cela régularise et gagne souvent un peu d’accuracy, sans modèle plus petit à la clé.</li>
+  </ul>
+  <p><strong>Que choisir</strong> : commencez toujours par response-based. Le feature-based est l’exercice 2 du notebook (hint layers, <code>register_forward_hook</code> et une petite couche linéaire de projection).</p>
+</section>
+
+<section id="s11">
+  <h2>La distillation en diffusion : LCM-LoRA</h2>
+  <p>Le notebook ouvre sur un exemple hors classification : la distillation sert aussi à <strong>accélérer</strong> un modèle qui génère des images.</p>
+  <ul>
+    <li><strong>Le problème.</strong> Un modèle de diffusion génère une image en l’affinant pas à pas : environ 25 étapes de débruitage, donc 25 passages dans le réseau.</li>
+    <li><strong>La distillation.</strong> Un student (le Latent Consistency Model) apprend à sauter directement vers le résultat final : 4 étapes suffisent.</li>
+    <li><strong>Ce qui est imité.</strong> Ici le student n’est pas plus petit, il est plus <strong>rapide</strong> : on distille le <em>processus</em> de génération, pas la taille.</li>
+  </ul>
+  <h3>Le lien avec le notebook 1</h3>
+  <p>LCM-LoRA emballe cette accélération dans un adaptateur <strong>LoRA</strong> : on le branche sur un modèle de base existant, sans réentraîner ses poids. C’est le pont le plus parlant du notebook : la distillation (ce qu’on apprend) et LoRA (comment on le stocke) se combinent.</p>
+  <p class="say"><strong>À retenir pour le live</strong> : distiller, ce n’est pas seulement rétrécir un modèle. C’est transférer un comportement vers quelque chose de moins cher à exécuter, que « moins cher » veuille dire moins de paramètres ou moins d’étapes.</p>
+</section>
+
+<section id="s12">
+  <h2>Les pièges et leurs correctifs</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Piège</th><th>Symptôme</th><th>Correctif</th></tr></thead>
+    <tbody>
+      <tr><td>Oublier <code>T * T</code></td><td>le terme soft pèse de moins en moins quand T monte, la CE domine, aucune erreur visible</td><td>garder le facteur, ou régler <code>alpha</code> en conséquence</td></tr>
+      <tr><td>Mauvais arguments de <code>KLDivLoss</code></td><td>loss négative ou absurde</td><td>1er argument en <strong>log</strong>-probabilités (student), 2e en probabilités (teacher)</td></tr>
+      <tr><td><code>reduction</code> par défaut</td><td>valeur de loss divisée par le nombre de classes, échelle fausse</td><td><code>reduction="batchmean"</code></td></tr>
+      <tr><td>Teacher en mode <code>train</code></td><td>BatchNorm et dropout actifs, cibles bruitées</td><td><code>teacher.eval()</code> et <code>torch.no_grad()</code></td></tr>
+      <tr><td>Student et teacher avec des entrées différentes</td><td>cibles incohérentes</td><td>même <code>x</code> pour les deux, même normalisation</td></tr>
+      <tr><td>T gardé à l’inférence</td><td>probabilités aplaties, mal calibrées</td><td>T = 1 au déploiement</td></tr>
+      <tr><td>Conclure sur une seule seed</td><td>gain de 1,8 point pris pour un résultat</td><td>plusieurs seeds, voir la section sur l’incertitude</td></tr>
+      <tr><td>Teacher mal fine-tuné</td><td>le student copie ses erreurs</td><td>vérifier d’abord l’accuracy du teacher</td></tr>
+      <tr><td>Student sans capacité</td><td>ni distillation ni témoin n’atteignent le teacher</td><td>élargir <code>STUDENT_WIDTH</code></td></tr>
+    </tbody>
+  </table></div>
+  <h3>Le piège le plus discret</h3>
+  <p>Le <code>T * T</code> ne lève aucune exception s’il manque : l’entraînement tourne, la loss baisse, et le résultat est simplement moins bon. C’est le premier endroit à vérifier quand la distillation ne bat pas le témoin.</p>
+</section>
+
+<section id="s13">
+  <h2>Pont avec le notebook 1 : fine-tuning et distillation</h2>
+  <p>Les deux méthodes servent à obtenir un modèle utile pour une tâche précise, mais elles ne transfèrent pas la même chose.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Fine-tuning (notebook 1)</th><th>Distillation (notebook 5)</th></tr></thead>
+    <tbody>
+      <tr><td>Ce qu’on transfère</td><td>l’<strong>état</strong> : les poids d’un modèle pré-entraîné</td><td>le <strong>comportement</strong> : les sorties du teacher</td></tr>
+      <tr><td>Point de départ</td><td>un modèle pré-entraîné</td><td>un student vierge, d’architecture libre</td></tr>
+      <tr><td>Architecture</td><td>imposée par le modèle de base</td><td>au choix</td></tr>
+      <tr><td>Signal d’apprentissage</td><td>les étiquettes</td><td>les étiquettes et les probabilités du teacher</td></tr>
+      <tr><td>Objectif typique</td><td>adapter un modèle à une tâche</td><td>le rendre plus petit ou plus rapide</td></tr>
+      <tr><td>Besoin d’un teacher</td><td>non</td><td>oui, figé pendant l’entraînement</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Ce qui se réutilise tel quel</h3>
+  <ul>
+    <li><strong>La boucle</strong> <code>zero_grad</code>, forward, loss, <code>backward</code>, <code>step</code>. Seule la loss change.</li>
+    <li><strong>Le teacher du notebook 5 est un résultat du notebook 1</strong> : un ResNet-18 pré-entraîné, dont on a remplacé la head et fine-tuné sur la tâche.</li>
+    <li><strong>Le learning rate et la normalisation des entrées</strong>, avec les mêmes ordres de grandeur.</li>
+    <li><strong>La rigueur d’évaluation</strong> : un témoin, une validation séparée, plusieurs seeds.</li>
+  </ul>
+  <h3>Ils se combinent</h3>
+  <p>On fine-tune d’abord un gros modèle pour obtenir un bon teacher, puis on le distille dans un petit student. C’est le scénario complet du notebook 5, et le schéma habituel en production : un gros modèle pour apprendre, un petit pour servir.</p>
+  <p class="say"><strong>Phrase de transition pour le live</strong> : « Au notebook 1 on a déplacé des poids vers un modèle. Maintenant on déplace un comportement vers un autre modèle. »</p>
+</section>
+
+<section id="s14">
+  <h2>Les exercices à la maison</h2>
+  <p>Le notebook propose des pistes que l’audience peut reprendre seule. Voici ce qu’elles enseignent et ce qu’il faut en attendre.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Piste</th><th>Ce qu’on apprend</th><th>Résultat attendu</th></tr></thead>
+    <tbody>
+      <tr><td>Balayer T et <code>alpha</code></td><td>l’effet de chaque réglage, et l’existence d’un optimum</td><td>T entre 2 et 4 en général, optimum plat</td></tr>
+      <tr><td>Distillation par features (hint layer)</td><td>imiter les activations, pas seulement les sorties</td><td>gain souvent plus net pour un student très petit</td></tr>
+      <tr><td>Rendre le student plus petit ou plus grand</td><td>le lien entre capacité et bénéfice de la distillation</td><td>l’écart avec le témoin se creuse quand la capacité manque</td></tr>
+      <tr><td>Plusieurs seeds</td><td>mesurer la vraie taille du gain</td><td>la distillation reste devant en moyenne, de peu</td></tr>
+      <tr><td>Réduire les données étiquetées</td><td>la distillation aide surtout quand les données sont rares</td><td>écart plus grand avec 50 images par classe qu’avec 300</td></tr>
+      <tr><td>Distiller avec des images non étiquetées</td><td>le teacher fournit des cibles gratuites</td><td>on peut entraîner le student sans aucune étiquette (<code>alpha = 1</code>)</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Par où commencer en live</strong> : le balayage de plusieurs seeds, car il répond directement à la fragilité du +1,8 point. Les résultats « attendus » ci-dessus sont des tendances à vérifier, pas des chiffres mesurés dans ce notebook.</p>
+</section>
+
+<section id="s15">
+  <h2>Questions probables</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Question</th><th>Réponse courte</th></tr></thead>
+    <tbody>
+      <tr><td>Quelle différence avec le fine-tuning ?</td><td>Le fine-tuning réutilise l’état (les poids) d’un modèle. La distillation transfère son comportement (ses sorties) vers un autre modèle, d’architecture libre.</td></tr>
+      <tr><td>Pourquoi pas juste entraîner le petit modèle sur les labels ?</td><td>Un label dur ne dit rien sur les classes voisines. Les probabilités du teacher portent cette information en plus : c’est la dark knowledge.</td></tr>
+      <tr><td>Pourquoi diviser les logits par T ?</td><td>Pour aplatir la distribution et rendre lisibles les petites probabilités, noyées sinon par la classe dominante.</td></tr>
+      <tr><td>Pourquoi multiplier par T² ?</td><td>Le gradient du terme soft rétrécit quand T monte. Le facteur compense, pour que le réglage de <code>alpha</code> reste valable.</td></tr>
+      <tr><td>Pourquoi un <code>log_softmax</code> d’un côté et un <code>softmax</code> de l’autre ?</td><td><code>KLDivLoss</code> de PyTorch attend des log-probabilités en entrée et des probabilités en cible.</td></tr>
+      <tr><td>Quel T et quel <code>alpha</code> choisir ?</td><td>Point de départ : T entre 2 et 4, <code>alpha</code> entre 0,5 et 0,9. Ensuite on balaie, l’optimum est plat.</td></tr>
+      <tr><td>Pourquoi garder la cross-entropy ?</td><td>Le teacher se trompe parfois. Les vraies étiquettes corrigent ses erreurs.</td></tr>
+      <tr><td>Le teacher est-il entraîné ici ?</td><td>Non : figé, en mode eval, sans gradient. Il fait seulement une passe avant par batch.</td></tr>
+      <tr><td>La distillation coûte-t-elle plus cher à l’entraînement ?</td><td>Oui, une passe avant du teacher en plus par batch. On paie une fois pour gagner à chaque inférence.</td></tr>
+      <tr><td>Le +1,8 point est-il significatif ?</td><td>Pas sur une seule seed et 800 images : il est dans le bruit de mesure. Il faut plusieurs seeds.</td></tr>
+      <tr><td>Pourquoi le témoin est-il parfois devant ?</td><td>Le gain est faible et les courbes se croisent : le bruit d’une epoch à l’autre suffit.</td></tr>
+      <tr><td>Le student peut-il dépasser le teacher ?</td><td>Rarement avec un student plus petit. En self-distillation, c’est possible et parfois observé.</td></tr>
+      <tr><td>Faut-il un teacher plus gros que le student ?</td><td>Pas nécessairement (self-distillation), mais un teacher plus fort apporte plus.</td></tr>
+      <tr><td>Peut-on distiller un modèle accessible seulement par API ?</td><td>Oui en response-based : il suffit d’obtenir ses sorties. Le feature-based demande d’ouvrir le modèle. Les conditions d’utilisation du service peuvent l’interdire.</td></tr>
+      <tr><td>Pourquoi repartir de zéro pour le student ?</td><td>Aucun modèle pré-entraîné n’a cette petite taille. On peut aussi initialiser un student depuis un modèle pré-entraîné plus petit, comme DistilBERT.</td></tr>
+      <tr><td>Distillation, quantification, pruning : quelle différence ?</td><td>Trois façons de réduire un modèle. La distillation en entraîne un nouveau, la quantification réduit la précision des poids, le pruning en supprime. Elles se combinent.</td></tr>
+      <tr><td>Et pour les LLM ?</td><td>Le principe est le même, avec des distributions sur le vocabulaire. On distille aussi des textes générés par un grand modèle pour fine-tuner un petit.</td></tr>
+      <tr><td>La distillation réduit-elle les biais du teacher ?</td><td>Non, elle les copie. Le student hérite des forces et des défauts du teacher.</td></tr>
+      <tr><td>Peut-on distiller sans étiquettes ?</td><td>Oui : avec <code>alpha = 1</code>, les cibles viennent uniquement du teacher, sur des données non étiquetées.</td></tr>
+      <tr><td>T s’applique-t-il au déploiement ?</td><td>Non. T = 1 à l’inférence, T ne sert qu’à l’entraînement.</td></tr>
+      <tr><td>Quand vaut-il mieux ne pas distiller ?</td><td>Quand un petit modèle pré-entraîné fine-tuné suffit (notebook 1), ou quand le gain attendu est dans le bruit de mesure.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="s16">
+  <h2>À corriger dans le notebook avant le live</h2>
+  <p>Incohérences repérées en relisant le notebook exécuté. Aucune ne casse le code, mais un public attentif les remarquera.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Endroit</th><th>Problème</th><th>Correction proposée</th></tr></thead>
+    <tbody>
+      <tr><td>Renvois aux notebooks 2 à 4</td><td>ils pointent vers des notebooks que l’audience n’a pas vus</td><td>reformuler ou retirer</td></tr>
+      <tr><td>« EuroSAT du notebook 1 »</td><td>les données changent d’un notebook à l’autre</td><td>dire que la tâche est la même famille, pas le même jeu</td></tr>
+      <tr><td>« stratégie B du notebook 1 »</td><td>la stratégie référencée ne correspond pas au teacher utilisé ici</td><td>décrire le teacher directement</td></tr>
+      <tr><td>« 30 pas »</td><td>le student s’entraîne sur 30 epochs et non 30 pas ; ailleurs le texte parle de 25</td><td>harmoniser le vocabulaire et les chiffres</td></tr>
+      <tr><td>Gradients « en 1/T² »</td><td>exact seulement à T très élevé ; le gradient exact est en 1/T</td><td>nuancer, voir la section sur la loss</td></tr>
+      <tr><td>Temps du teacher : 1 344 s</td><td>très élevé pour 5 epochs, à expliquer (CPU ?) ou à relancer</td><td>vérifier le matériel utilisé</td></tr>
+      <tr><td>LR du teacher : 3e-4</td><td>plus élevé que les 1e-5 à 1e-4 recommandés au notebook 1</td><td>justifier ou réduire</td></tr>
+      <tr><td>« Quelques points » de gain</td><td>le gain mesuré est 1,8 point</td><td>citer le chiffre</td></tr>
+    </tbody>
+  </table></div>
+  <p>Les quatre renvois du haut du tableau ont déjà été reformulés dans une proposition de texte que je peux appliquer à une copie du notebook sur demande.</p>
+</section>
+</main>
+
+<script>
+(function () {
+  var NS = 'http://www.w3.org/2000/svg';
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function defs(id) {
+    return '<defs><marker id="' + id + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="mk" d="M0 0L10 5L0 10z"/></marker></defs>';
+  }
+  function txt(x, y, s, cls, anchor, size) {
+    return '<text x="' + x + '" y="' + y + '" class="' + cls + '"' + (anchor ? ' text-anchor="' + anchor + '"' : '') + (size ? ' font-size="' + size + '"' : '') + '>' + esc(s) + '</text>';
+  }
+  /* boîte centrée : nom en gras, puis lignes de détail */
+  function box(cx, cy, w, h, main, name, lines, dy) {
+    var n = lines.length;
+    var d = (dy !== undefined) ? dy : (n ? -4 - 4 * (n - 1) : 5);
+    var out = '<rect class="' + (main ? 'ba' : 'bx') + '" x="' + (cx - w / 2) + '" y="' + (cy - h / 2) + '" width="' + w + '" height="' + h + '" rx="8"/>';
+    out += txt(cx, cy + d, name, 't n', 'middle', 13);
+    for (var i = 0; i < n; i++) out += txt(cx, cy + d + 18 + 16 * i, lines[i], 'q', 'middle', 11.5);
+    return out;
+  }
+  function svg(vb, label, id, inner) {
+    return '<svg viewBox="' + vb + '" role="img" aria-label="' + esc(label) + '">' + defs(id) + inner + '</svg>';
+  }
+  function title(s) { return txt(24, 32, s, 't n', null, 15); }
+
+  /* 1. Vue d'ensemble */
+  (function () {
+    var W = 150, H = 72, c1 = 99, c2 = 275, c3 = 451, c4 = 627, rA = 110, rM = 160, rB = 210, m = 'ov-arrow', u = 'url(#ov-arrow)';
+    var p = '<g>' +
+      '<path class="ln" marker-end="' + u + '" d="M' + (c1 + W / 2) + ' ' + rM + 'H' + (c1 + W / 2 + 13) + 'V' + rA + 'H' + (c2 - W / 2) + '"/>' +
+      '<path class="ln" marker-end="' + u + '" d="M' + (c1 + W / 2 + 13) + ' ' + rM + 'V' + rB + 'H' + (c3 - W / 2) + '"/>' +
+      '<path class="ln" marker-end="' + u + '" d="M' + (c2 + W / 2) + ' ' + rA + 'H' + (c3 - W / 2) + '"/>' +
+      '<path class="ln" marker-end="' + u + '" d="M' + (c3 + W / 2) + ' ' + rA + 'H' + (c3 + W / 2 + 13) + 'V' + rM + 'H' + (c4 - W / 2) + '"/>' +
+      '<path class="ln" d="M' + (c3 + W / 2) + ' ' + rB + 'H' + (c3 + W / 2 + 13) + 'V' + rM + '"/></g>';
+    p += box(c1, rM, W, H, false, 'Données', ['3 000 en train', '800 en validation']);
+    p += box(c2, rA, W, H, false, 'Teacher', ['ResNet-18 fine-tuné', '5 epochs, puis figé']);
+    p += box(c3, rA, W, H, true, 'Student distillé', ['30 epochs, loss KD', 'T = 4, alpha = 0,7']);
+    p += box(c3, rB, W, H, false, 'Student témoin', ['30 epochs, CE seule', 'même seed']);
+    p += box(c4, rM, W, H, false, 'Comparaison', ['accuracy en', 'validation']);
+    p += txt(24, 284, 'Le teacher alimente seulement le student distillé ; le témoin n’utilise que les étiquettes.', 'q', null, 11.5);
+    document.getElementById('fig-overview').innerHTML = svg('0 0 760 304', 'Un teacher fine-tuné, deux students, une comparaison', m, title('Un teacher fine-tuné, deux students, une comparaison') + p) +
+      '<figcaption>Le notebook en 4 temps : 1 teacher, 2 students.</figcaption>';
+  })();
+
+  /* 2. État contre comportement */
+  (function () {
+    var W = 208, H = 72, xl = 24, xr = 504, rA = 112, rB = 232, u = 'url(#etat-arrow)';
+    var p = txt(24, 58, 'Fine-tuning (notebook 1) : on transfère l’état', 'q', null, 11.5) +
+      txt(24, 178, 'Distillation (notebook 5) : on transfère le comportement', 'q', null, 11.5) +
+      '<path class="ln" marker-end="' + u + '" d="M' + (xl + W) + ' ' + rA + 'H' + xr + '"/>' +
+      '<path class="ln" marker-end="' + u + '" d="M' + (xl + W) + ' ' + rB + 'H' + xr + '"/>';
+    p += box(xl + W / 2, rA, W, H, false, 'Modèle pré-entraîné', ['poids appris sur ImageNet'], -8);
+    p += box(xr + W / 2, rA, W, H, false, 'Modèle adapté', ['même architecture'], -8);
+    p += box(xl + W / 2, rB, W, H, false, 'Teacher', ['fine-tuné, puis figé'], -8);
+    p += box(xr + W / 2, rB, W, H, true, 'Student', ['architecture libre', 'départ à zéro'], -8);
+    p += txt(368, rA - 10, 'les poids sont repris', 'q', 'middle', 11.5);
+    p += txt(368, rB - 10, 'ses probabilités sont imitées', 'q', 'middle', 11.5);
+    p += txt(24, 302, 'Seul le comportement passe de l’un à l’autre : le student n’hérite d’aucun poids.', 'q', null, 11.5);
+    document.getElementById('fig-etat').innerHTML = svg('0 0 760 324', 'Le fine-tuning déplace des poids, la distillation un comportement', 'etat-arrow', title('Le fine-tuning déplace des poids, la distillation un comportement') + p) +
+      '<figcaption>État contre comportement : deux schémas.</figcaption>';
+  })();
+
+  /* 3. Un pas d'entraînement */
+  (function () {
+    var H = 56, yT = 86, yM = 128, yS = 170, yB = 262, u = 'url(#pas-arrow)';
+    function a(d) { return '<path class="ln" marker-end="' + u + '" d="' + d + '"/>'; }
+    var p = a('M108 128H114V86H120') + a('M108 128H114V170H120') + a('M220 86H238') + a('M282 86H300') +
+      a('M220 170H238') + a('M282 170H300') + a('M464 86H480V114H494') + a('M464 170H480V142H494') +
+      a('M572 156V190H615V234') + a('M260 198V234') + a('M108 262H200') + a('M320 262H494');
+    p += box(66, yM, 84, H, false, 'x', ['image']);
+    p += box(170, yT, 100, H, false, 'Teacher', ['figé']);
+    p += box(170, yS, 100, H, false, 'Student', ['appris']);
+    p += box(260, yT, 44, H, false, 'v', []);
+    p += box(260, yS, 44, H, false, 'z', []);
+    p += box(382, yT, 164, H, false, 'softmax(v / T)', ['= p (douces)']);
+    p += box(382, yS, 164, H, false, 'softmax(z / T)', ['= q (douces)']);
+    p += box(572, yM, 156, H, false, 'T² · KL(p ‖ q)', ['imiter le teacher']);
+    p += box(66, yB, 84, H, false, 'y', ['étiquette']);
+    p += box(260, yB, 120, H, false, 'CE(z, y)', ['garde-fou']);
+    p += box(615, yB, 242, H, true, 'L = α·soft + (1 − α)·CE', ['backward : seul le student change']);
+    p += txt(625, 184, '× α', 'q', null, 11.5);
+    p += txt(407, 254, '× (1 − α)', 'q', 'middle', 11.5);
+    p += txt(24, 318, 'Le gradient de L ne remonte que dans le student ; v et p restent des constantes.', 'q', null, 11.5);
+    document.getElementById('fig-pas').innerHTML = svg('0 0 760 340', 'Un pas d’entraînement : une seule loss mélange les deux signaux', 'pas-arrow', title('Un pas d’entraînement : une seule loss mélange les deux signaux') + p) +
+      '<figcaption>Un pas d’entraînement, chaque lettre placée.</figcaption>';
+  })();
+
+  /* 4. Courbe KD contre témoin */
+  (function () {
+    var rows = [
+      { series: 'Distillation', epoch: 1, acc: 51.9 }, { series: 'Distillation', epoch: 5, acc: 62.7 }, { series: 'Distillation', epoch: 10, acc: 63.2 },
+      { series: 'Distillation', epoch: 15, acc: 69.5 }, { series: 'Distillation', epoch: 20, acc: 71.8 }, { series: 'Distillation', epoch: 25, acc: 72.1 },
+      { series: 'Distillation', epoch: 30, acc: 71.6 },
+      { series: 'Témoin', epoch: 1, acc: 51.2 }, { series: 'Témoin', epoch: 5, acc: 64.5 }, { series: 'Témoin', epoch: 10, acc: 66.1 },
+      { series: 'Témoin', epoch: 15, acc: 71.1 }, { series: 'Témoin', epoch: 20, acc: 73.0 }, { series: 'Témoin', epoch: 25, acc: 69.8 },
+      { series: 'Témoin', epoch: 30, acc: 69.9 }
+    ];
+    var kd = rows.filter(function (r) { return r.series === 'Distillation'; });
+    var ce = rows.filter(function (r) { return r.series === 'Témoin'; });
+    function X(e) { return 64 + (e - 1) / 29 * 496; }
+    function Y(a) { return 300 - (a - 50) / 25 * 220; }
+    function pct(a) { return a.toFixed(1).replace('.', ',') + ' %'; }
+    function path(list) { return list.map(function (r, i) { return (i ? 'L' : 'M') + X(r.epoch) + ' ' + Y(r.acc); }).join(' '); }
+    var p = '';
+    for (var t = 50; t <= 75; t += 5) {
+      p += '<line class="' + (t === 50 ? 'axis' : 'grid') + '" x1="64" x2="560" y1="' + Y(t) + '" y2="' + Y(t) + '"/>' + txt(56, Y(t) + 4, t + ' %', 'q', 'end', 11.5);
+    }
+    kd.forEach(function (r) { p += txt(X(r.epoch), 322, r.epoch, 'q', 'middle', 11.5); });
+    p += '<path d="' + path(ce) + '" fill="none" stroke="var(--edge)" stroke-opacity="0.6" stroke-width="2"/>';
+    ce.forEach(function (r) { p += '<circle cx="' + X(r.epoch) + '" cy="' + Y(r.acc) + '" r="3.5" fill="var(--edge)" fill-opacity="0.8"><title>' + esc(r.series + ', epoch ' + r.epoch + ' : ' + pct(r.acc)) + '</title></circle>'; });
+    p += '<path d="' + path(kd) + '" fill="none" stroke="var(--accent)" stroke-width="2"/>';
+    kd.forEach(function (r) { p += '<circle cx="' + X(r.epoch) + '" cy="' + Y(r.acc) + '" r="3.5" fill="var(--accent)"><title>' + esc(r.series + ', epoch ' + r.epoch + ' : ' + pct(r.acc)) + '</title></circle>'; });
+    var lk = kd[kd.length - 1], lc = ce[ce.length - 1];
+    p += txt(570, Y(lc.acc) + 12, lc.series + ' ' + pct(lc.acc), 'q', null, 12);
+    p += txt(570, Y(lk.acc) - 4, lk.series + ' ' + pct(lk.acc), 't n', null, 12);
+    p += txt(312, 342, 'epoch', 'q', 'middle', 11.5);
+    p += txt(24, 362, 'Le témoin est devant aux epochs 5, 10, 15 et 20 ; l’axe démarre à 50 %.', 'q', null, 11.5);
+    var head = txt(24, 30, 'La distillation ne passe devant le témoin qu’en fin d’entraînement', 't n', null, 15) +
+      txt(24, 50, 'Accuracy en validation (800 images), student distillé contre témoin, une seed', 'q', null, 11.5);
+    document.getElementById('fig-chart').innerHTML =
+      '<svg viewBox="0 0 760 372" role="img" aria-label="La distillation ne passe devant le témoin qu’en fin d’entraînement">' + head + p + '</svg>' +
+      '<figcaption>Sorties d’entraînement du notebook 05_distillation.EXECUTED.ipynb, 7 epochs relevées.</figcaption>';
+  })();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notebook 01 fine-tuning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Plan : neutres légèrement bleutés, accent bleu profond (vision), second ton orangé (texte et head), rouge pour l’échec ;
+   IBM Plex Sans + Plex Mono ; colonne de lecture de 800px, sommaire en tête, schémas pleine colonne. */
+:root {
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --ink: #15191f;
+  --quiet: #566070;
+  --rule: #dfe3ea;
+  --accent: #1f5fbf;
+  --c1: #1f5fbf;
+  --c2: #c2620a;
+  --bad: #c0352b;
+  --edge: #8892a2;
+  --code-bg: #eef1f6;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161c; --surface: #1a2029; --ink: #e8ecf2; --quiet: #9aa5b6; --rule: #2b3340;
+    --accent: #6ea4ff; --c1: #6ea4ff; --c2: #f0a35e; --bad: #ff7f73; --edge: #6f7a8c; --code-bg: #20272f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf2; --quiet: #9aa5b6; --rule: #2b3340;
+  --accent: #6ea4ff; --c1: #6ea4ff; --c2: #f0a35e; --bad: #ff7f73; --edge: #6f7a8c; --code-bg: #20272f;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; }
+main { max-width: 800px; margin: 0 auto; padding: 32px 20px 72px; }
+header h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 8px; font-weight: 600; text-wrap: balance; }
+header .lead { color: var(--quiet); margin: 0 0 20px; font-size: 1.05rem; max-width: 65ch; }
+nav.toc { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 20px; margin-bottom: 8px; }
+nav.toc strong { display: block; margin-bottom: 8px; font-size: 0.85rem; color: var(--quiet); letter-spacing: 0.02em; }
+nav.toc ol { margin: 0; padding-left: 1.4em; columns: 2 280px; column-gap: 32px; }
+nav.toc li { margin: 2px 0; break-inside: avoid; }
+nav.toc a { color: var(--ink); text-decoration: none; }
+nav.toc a:hover { color: var(--accent); text-decoration: underline; }
+section { padding-top: 40px; }
+h2 { font-size: 1.5rem; line-height: 1.3; margin: 0 0 12px; font-weight: 600; text-wrap: balance; scroll-margin-top: 16px; }
+h3 { font-size: 1.1rem; margin: 28px 0 8px; font-weight: 600; text-wrap: balance; scroll-margin-top: 16px; }
+p, ul, ol { max-width: 68ch; }
+p { margin: 0 0 12px; }
+ul, ol.steps { padding-left: 1.3em; margin: 0 0 12px; }
+li { margin: 4px 0; }
+a:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; overflow-x: auto; margin: 0 0 14px; font-size: 0.85rem; line-height: 1.55; }
+pre code { background: none; padding: 0; font-size: inherit; }
+.tablewrap { overflow-x: auto; margin: 0 0 16px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { background: var(--code-bg); font-weight: 600; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+figure { margin: 18px 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 12px; overflow-x: auto; }
+figure svg { display: block; width: 100%; min-width: 560px; height: auto; }
+figcaption { color: var(--quiet); font-size: 0.82rem; margin-top: 6px; padding: 0 4px; }
+.eq { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; margin: 0 0 14px; overflow-x: auto; font-size: 1.2rem; }
+.eq math { display: block; }
+.note { color: var(--quiet); font-size: 0.9rem; }
+ul.check { list-style: none; padding-left: 0; }
+ul.check li { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid var(--rule); }
+ul.check li:last-child { border-bottom: 0; }
+ul.check input { margin-top: 5px; width: 16px; height: 16px; accent-color: var(--accent); flex: none; }
+ul.check label { cursor: pointer; }
+svg text { font-family: var(--font-body); }
+svg .t { fill: var(--ink); }
+svg .q { fill: var(--quiet); }
+svg .n { font-weight: 600; }
+svg .bx { fill: none; stroke: var(--edge); stroke-width: 1.25; }
+svg .ba { fill: var(--c1); fill-opacity: 0.12; stroke: var(--c1); stroke-width: 2; }
+svg .f1 { fill: var(--c1); fill-opacity: 0.12; stroke: var(--c1); stroke-width: 1.25; }
+svg .f2 { fill: var(--c2); fill-opacity: 0.12; stroke: var(--c2); stroke-width: 1.25; }
+svg .fb { fill: var(--bad); fill-opacity: 0.18; stroke: var(--bad); stroke-width: 1.25; }
+svg .ln { fill: none; stroke: var(--edge); stroke-width: 1.25; }
+svg .mk { fill: var(--edge); }
+@media print {
+  body { background: #fff; color: #000; }
+  nav.toc { display: none; }
+  section { break-inside: auto; padding-top: 24px; }
+  figure, .tablewrap, pre { break-inside: avoid; }
+}
+@media (max-width: 480px) { header h1 { font-size: 1.6rem; } main { padding-left: 16px; padding-right: 16px; } }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Notebook 01 : fine-tuning, schémas et notions</h1>
+  <p class="lead">Le notebook 01 enseigne qu’on part d’un modèle pré-entraîné plutôt que de zéro : voici sa structure, ses notions et ses résultats en schémas.</p>
+  <nav class="toc" aria-label="Sommaire">
+    <strong>Sommaire</strong>
+    <ol>
+      <li><a href="#s1">Vue d’ensemble</a></li>
+      <li><a href="#s2">Les notions clés</a>
+        <ul>
+          <li><a href="#backbone">Le backbone : ResNet-50</a></li>
+          <li><a href="#head">La head</a></li>
+          <li><a href="#batchnorm">BatchNorm</a></li>
+          <li><a href="#geler">Réglage 1 · Quoi geler</a></li>
+          <li><a href="#lr">Réglage 2 · Le learning rate</a></li>
+          <li><a href="#entrees">Réglage 3 · Les entrées</a></li>
+          <li><a href="#boucle">La boucle d’entraînement</a></li>
+        </ul>
+      </li>
+      <li><a href="#s3">Les stratégies de fine-tuning</a></li>
+      <li><a href="#s4">LoRA</a></li>
+      <li><a href="#s5">Les résultats</a></li>
+      <li><a href="#s6">Faut-il fine-tuner ?</a></li>
+      <li><a href="#s7">Pièges et checklist</a></li>
+      <li><a href="#s8">Pont vers la distillation</a></li>
+      <li><a href="#s9">Questions probables</a></li>
+    </ol>
+  </nav>
+</header>
+
+<section id="s1">
+  <h2>Vue d’ensemble</h2>
+  <figure id="fig-overview"></figure>
+  <p>Les parties 1 à 3 fixent la recette sur des images, la partie 4 la rejoue sur du texte, la partie 5 la résume en tableau, arbre de décision et checklist.</p>
+</section>
+
+<section id="s2">
+  <h2>Les notions clés</h2>
+  <figure id="fig-notions"></figure>
+  <p>Le transfer learning réutilise ce qu’un modèle a appris sur une tâche A pour une tâche B. Le fine-tuning continue l’entraînement sur vos données, en général avec un learning rate bas.</p>
+  <p>Sous le schéma, chaque boîte est détaillée dans l’ordre : le backbone et la head, puis les trois réglages (quoi geler, à quelle vitesse, quelles entrées), et enfin la boucle d’entraînement où ils agissent.</p>
+
+  <h3 id="backbone">Le backbone : l’exemple de ResNet-50</h3>
+  <p>C’est le backbone du notebook. Tout ce qui précède <code>fc</code> est le backbone ; <code>fc</code> est la head.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Position</th><th>Couche</th><th>Rôle</th><th>BatchNorm ?</th></tr></thead>
+    <tbody>
+      <tr><td>Entrée</td><td>image 3 × 224 × 224</td><td></td><td></td></tr>
+      <tr><td>Début</td><td><code>stem</code> (conv 7×7, BN, ReLU, pooling)</td><td>bords, textures</td><td>oui</td></tr>
+      <tr><td>Milieu</td><td><code>layer1</code> à <code>layer4</code> (blocs résiduels, de 256 à 2048 canaux)</td><td>motifs, parties d’objets, objets</td><td>oui, après chaque convolution</td></tr>
+      <tr><td>Fin</td><td>pooling global, vecteur de 2048 valeurs</td><td>résumé de l’image (les features)</td><td>non</td></tr>
+      <tr><td>Sortie</td><td><code>fc</code> : <code>Linear(2048 → 1000)</code> en ImageNet</td><td>la head : features vers prédiction</td><td>non</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="head">La head</h3>
+  <p>La head est la dernière couche : elle relie les features aux classes. Celle d’ImageNet prédit 1000 classes, ce qui ne sert à rien pour 37 races, donc on la remplace par une neuve (aléatoire, <code>requires_grad = True</code>) :</p>
+<pre><code>model.fc = nn.Linear(2048, 37)</code></pre>
+  <p>En Keras, c’est <code>include_top=False</code>, puis <code>GlobalAveragePooling2D</code> et <code>Dense(37)</code>.</p>
+
+  <h3 id="batchnorm">BatchNorm : une couche du backbone à connaître</h3>
+  <p>Une BatchNorm normalise les valeurs qui la traversent, canal par canal. Elle contient deux types d’objets :</p>
+  <ul>
+    <li><strong>Paramètres appris</strong> : γ et β (2 par canal). Ce sont eux que <code>requires_grad</code> gèle.</li>
+    <li><strong>Statistiques courantes</strong> : <code>running_mean</code> et <code>running_var</code>. Ce ne sont pas des paramètres mais des <em>buffers</em>.</li>
+  </ul>
+  <p>Son comportement dépend du mode. En <code>train()</code>, elle normalise avec les statistiques du batch en cours et met à jour les statistiques courantes. En <code>eval()</code>, elle utilise les statistiques courantes, figées.</p>
+
+  <h3 id="geler">Réglage 1 · Quoi geler : Keras contre PyTorch</h3>
+  <p><code>requires_grad = False</code> est un attribut de chaque paramètre PyTorch : autograd ne calcule pas son gradient au <code>backward()</code> et l’optimiseur le saute, donc le poids ne bouge plus. Ce n’est pas <code>torch.no_grad()</code>, qui coupe le calcul de gradient pour tout un bloc de code.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Keras <code>trainable = False</code></th><th>PyTorch <code>requires_grad = False</code></th></tr></thead>
+    <tbody>
+      <tr><td>Où</td><td>sur une couche ou un modèle entier, d’un coup</td><td>sur chaque paramètre (boucle, ou <code>module.requires_grad_(False)</code>)</td></tr>
+      <tr><td>Prise en compte</td><td>il faut recompiler (<code>compile()</code>) après le changement</td><td>immédiate, il n’y a pas de <code>compile</code></td></tr>
+      <tr><td>BatchNorm</td><td>une BatchNorm gelée passe aussi en mode inférence : statistiques figées</td><td>γ et β sont gelés, mais les statistiques continuent de bouger en mode <code>train()</code></td></tr>
+    </tbody>
+  </table></div>
+  <p>La dernière ligne est le piège n°1 de la partie 3.7. Avec de petits batchs et vos propres images, les statistiques dérivent loin de celles d’ImageNet, alors que les poids gelés en aval ont été calibrés pour les anciennes. Les features se dégradent sans aucune erreur. Le correctif : remettre les BatchNorm gelées en <code>eval()</code>.</p>
+
+  <h3>Réglage 1 (suite) · Compter les paramètres actifs</h3>
+<pre><code>total = sum(p.numel() for p in model.parameters())
+entrainables = sum(p.numel() for p in model.parameters() if p.requires_grad)</code></pre>
+  <p>En Keras : <code>model.count_params()</code> pour le total, <code>sum(np.prod(w.shape) for w in model.trainable_weights)</code> pour les poids entraînables.</p>
+  <p>Vérification parlante : le linear probe ResNet-50 affiche 75 813 paramètres entraînables, soit exactement 2048 × 37 + 37 (poids et biais de la head). Pour DINOv2 : 384 × 37 + 37 = 14 245. Limite : les statistiques de BatchNorm sont des buffers, absentes des deux comptes, alors qu’elles changent en mode <code>train()</code>.</p>
+
+  <h3 id="lr">Réglage 2 · À quelle vitesse : le learning rate</h3>
+  <p>Le learning rate (LR) est l’amplitude du pas que l’optimiseur fait à chaque mise à jour : il agit à l’étape <code>step</code> de la boucle (<code>poids ← poids − LR × direction</code>). Un LR trop haut fait sortir les poids pré-entraînés de leur bonne zone : le notebook obtient 2,7 %, soit le hasard.</p>
+  <ul>
+    <li><strong>LR bas</strong> : 10 à 100 fois plus bas que from scratch (environ 1e-5 à 1e-4 pour le backbone).</li>
+    <li><strong>LR par groupe</strong> : plus haut pour la head neuve, plus bas pour le backbone, et encore plus bas vers l’entrée.</li>
+    <li><strong>Au fil du temps</strong> : le scheduler en cosinus fait décroître le LR jusqu’à zéro ; le warmup part d’un LR très bas pour protéger le backbone tant que la head est aléatoire.</li>
+  </ul>
+
+  <h3 id="entrees">Réglage 3 · Quelles entrées</h3>
+  <p>Le modèle a appris sur des entrées préparées d’une certaine façon : il faut lui servir exactement la même, sinon ses poids interprètent mal les valeurs, sans aucune erreur affichée.</p>
+  <ul>
+    <li><strong>Vision</strong> : pixels ramenés à 0-1, puis normalisation avec la moyenne et l’écart-type d’ImageNet, taille 224 × 224. À l’évaluation, pas d’augmentation, mais la normalisation s’applique toujours.</li>
+    <li><strong>Texte</strong> : le tokenizer du modèle, jamais un autre.</li>
+  </ul>
+
+  <h3 id="boucle">Où les réglages agissent : la boucle d’entraînement</h3>
+  <p>Le pont Keras vers PyTorch passe par la boucle <code>zero_grad → forward → loss → backward → step</code>. Les concepts sont les mêmes qu’en Keras (couches, loss, optimiseur, epochs), mais Keras les cache dans <code>compile()</code> puis <code>fit()</code>, alors que PyTorch fait écrire chaque étape :</p>
+  <ol class="steps">
+    <li><strong><code>zero_grad</code></strong> : remet les gradients à zéro. PyTorch les accumule à chaque <code>backward</code>, sans cela ils s’additionnent d’un batch à l’autre.</li>
+    <li><strong><code>forward</code></strong> : <code>model(x)</code> produit les sorties. C’est ici que le mode <code>train()</code> ou <code>eval()</code> agit (BatchNorm, dropout).</li>
+    <li><strong><code>loss</code></strong> : compare sorties et étiquettes, et donne un nombre.</li>
+    <li><strong><code>backward</code></strong> : calcule le gradient de chaque paramètre ; ceux à <code>requires_grad = False</code> sont sautés.</li>
+    <li><strong><code>step</code></strong> : l’optimiseur déplace les poids selon ces gradients, avec le learning rate.</li>
+  </ol>
+  <p>Le fine-tuning se joue donc à deux endroits de cette boucle : quels paramètres reçoivent un gradient (étape 4) et de combien l’optimiseur les déplace (étape 5, le learning rate). En distillation, c’est la même boucle, avec une seule ligne qui change : la loss.</p>
+</section>
+
+<section id="s3">
+  <h2>Les stratégies de fine-tuning</h2>
+  <figure id="fig-strat"></figure>
+  <p>Toutes partent du même ResNet-50 et du même split de 10 images par race : seul change ce qui apprend, et à quelle vitesse. Dégeler sert surtout quand la tâche s’éloigne du pré-entraînement.</p>
+</section>
+
+<section id="s4">
+  <h2>LoRA : n’entraîner que de petites corrections</h2>
+  <p>LoRA gèle tout le modèle et ajoute, à chaque matrice visée, deux matrices très fines B et A que l’on entraîne à la place. La matrice corrigée vaut :</p>
+  <div class="eq" role="math" aria-label="W prime égale W plus alpha sur r fois B fois A">
+    <math display="block"><mrow>
+      <msup><mi>W</mi><mo>′</mo></msup><mo>=</mo><mi>W</mi><mo>+</mo>
+      <mfrac><mi>α</mi><mi>r</mi></mfrac><mo>⁢</mo><mi>B</mi><mo>⁢</mo><mi>A</mi>
+    </mrow></math>
+  </div>
+  <p><code>W</code> reste gelée. <code>r</code> (le rang) est un petit nombre : B est de taille (lignes de <code>W</code>) × <code>r</code>, A de taille <code>r</code> × (colonnes de <code>W</code>). Leur produit redonne une matrice de la taille de <code>W</code>, mais ne demande d’entraîner que très peu de valeurs.</p>
+  <h3>L’exemple du notebook : CamemBERTav2 sur AlloCiné</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Élément</th><th>Valeur</th></tr></thead>
+    <tbody>
+      <tr><td>Matrice visée (par exemple <code>query_proj</code>)</td><td>768 × 768 = 589 824 poids, gelés</td></tr>
+      <tr><td>B</td><td>768 × 8 = 6 144 poids</td></tr>
+      <tr><td>A</td><td>8 × 768 = 6 144 poids</td></tr>
+      <tr><td>LoRA pour cette matrice</td><td>12 288 poids, soit 48 fois moins</td></tr>
+      <tr><td>Réglages</td><td>r = 8, α = 16, donc α / r = 2</td></tr>
+      <tr><td>Matrices visées</td><td><code>query_proj</code>, <code>key_proj</code>, <code>value_proj</code> des 12 blocs : 36 matrices</td></tr>
+      <tr><td>Poids LoRA au total</td><td>36 × 12 288 = 442 368</td></tr>
+      <tr><td>Head (<code>pooler</code> et <code>classifier</code>), entraînée en entier</td><td>592 130</td></tr>
+      <tr><td>Total entraîné</td><td>1 034 498 sur 112 243 204, soit 0,92 %</td></tr>
+      <tr><td>Sur disque</td><td>4,0 Mo, contre 424,3 Mo pour le modèle complet (107 fois moins)</td></tr>
+      <tr><td>Learning rate</td><td>1e-3, environ 30 fois celui du full fine-tuning</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><strong>Pourquoi ça marche</strong> : l’hypothèse du papier (Hu et al., 2021) est que la correction nécessaire tient dans peu de directions, donc dans un rang faible.</li>
+    <li><strong>B part de zéro</strong> : au début B × A = 0, le modèle est exactement le modèle de base. C’est aussi pourquoi on peut prendre un learning rate plus grand.</li>
+    <li><strong>Piège de lecture</strong> : la head compte ici plus de poids (592 130) que les matrices LoRA (442 368).</li>
+    <li><strong>Le gain est le stockage, pas le temps</strong> : sur ce petit modèle le calcul traverse tout le réseau quand même (28 s contre 26 s). Sur un LLM, LoRA supprime l’essentiel des gradients et des états d’optimiseur : c’est la différence entre possible et impossible sur une seule carte graphique.</li>
+  </ul>
+</section>
+
+<section id="s5">
+  <h2>Les résultats</h2>
+  <p>Avec 10 images par race, un backbone pré-entraîné atteint 88,7 % contre 11,1 % pour un CNN from scratch ; en texte, LoRA égale le full fine-tuning avec 0,9 % des poids.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Partie</th><th>Méthode</th><th>Accuracy</th><th>Poids entraînés</th><th>Temps (s)</th></tr></thead>
+    <tbody>
+      <tr><td>Vision</td><td>From scratch (petit CNN)</td><td>11,1 %</td><td>100 %</td><td>3,7</td></tr>
+      <tr><td>Vision</td><td>Linear probe ResNet-50</td><td>88,7 %</td><td>0,3 %</td><td>0,5</td></tr>
+      <tr><td>Vision</td><td>Linear probe DINOv2 ViT-S/14</td><td>89,1 %</td><td>0,07 %</td><td>0,5</td></tr>
+      <tr><td>Vision</td><td>Fine-tuning partiel</td><td>89,9 %</td><td>64 %</td><td>1,5</td></tr>
+      <tr><td>Vision</td><td>Full fine-tuning (LR bas)</td><td>89,0 %</td><td>100 %</td><td>4,0</td></tr>
+      <tr><td>Vision</td><td>LR trop haut</td><td>2,7 %</td><td>100 %</td><td>4,0</td></tr>
+      <tr><td>Vision</td><td>LP-FT</td><td>89,0 %</td><td>100 %</td><td>4,9</td></tr>
+      <tr><td>Texte</td><td>Baseline (head aléatoire)</td><td>50,0 %</td><td>0 %</td><td>2,7</td></tr>
+      <tr><td>Texte</td><td>Linear probe</td><td>92,3 %</td><td>0,001 %</td><td>6,9</td></tr>
+      <tr><td>Texte</td><td>Full fine-tuning</td><td>95,8 %</td><td>100 %</td><td>26,3</td></tr>
+      <tr><td>Texte</td><td>LoRA</td><td>96,0 %</td><td>0,9 %</td><td>27,7</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Vision : ResNet-50, 37 races, 10 images par race. Texte : CamemBERTav2 sur AlloCiné. Valeurs de l’exécution du notebook sur un GPU de 24 Go. En vision, les écarts d’environ 1 point ne sont pas significatifs : le notebook recommande plusieurs seeds avant de conclure.</p>
+</section>
+
+<section id="s6">
+  <h2>Faut-il fine-tuner ?</h2>
+  <figure id="fig-tree"></figure>
+  <p>Pour injecter des faits nouveaux dans un LLM, le RAG l’emporte nettement sur un fine-tuning qui continue l’entraînement sur les documents (Ovadia et al., EMNLP 2024). Pour apprendre des faits, on va les chercher ; pour changer la façon de faire, on fine-tune.</p>
+</section>
+
+<section id="s7">
+  <h2>Pièges et checklist</h2>
+  <p>Les pires bugs de fine-tuning ne lèvent aucune erreur : ils font juste baisser le score. Voici les pièges du notebook, puis la checklist à cocher avant de lancer.</p>
+  <ul>
+    <li><strong>LR trop élevé</strong> : 2,7 % d’accuracy, soit le hasard. Le modèle pré-entraîné est détruit en une epoch.</li>
+    <li><strong>BatchNorm gelées mais laissées en mode train</strong> : leurs statistiques dérivent malgré <code>requires_grad = False</code>.</li>
+    <li><strong>Prétraitement différent du pré-entraînement</strong> : mauvaise normalisation, mauvaise taille d’entrée.</li>
+    <li><strong><code>model.eval()</code> oublié à l’évaluation</strong> : dropout et BatchNorm faussent le résultat.</li>
+    <li><strong>Accuracy seule en texte</strong> : un modèle qui répond toujours « positif » fait aussi 50 % sur un test équilibré.</li>
+    <li><strong>Mauvais noms de modules pour LoRA</strong> : vérifier ce qu’on entraîne vraiment.</li>
+  </ul>
+  <h3>Checklist avant de lancer</h3>
+  <ul class="check">
+    <li><input type="checkbox" id="c1"><label for="c1">Normalisation et taille des entrées identiques à celles du pré-entraînement</label></li>
+    <li><input type="checkbox" id="c2"><label for="c2">Un linear probe sert de baseline</label></li>
+    <li><input type="checkbox" id="c3"><label for="c3">Les poids à geler le sont vraiment (vérifier le nombre de paramètres entraînables)</label></li>
+    <li><input type="checkbox" id="c4"><label for="c4">Learning rate 10 à 100 fois plus bas que from scratch (1e-5 à 1e-4 pour le backbone)</label></li>
+    <li><input type="checkbox" id="c5"><label for="c5">Backbone protégé tant que la head est aléatoire (warmup, LR bas ou LP-FT)</label></li>
+    <li><input type="checkbox" id="c6"><label for="c6"><code>model.eval()</code> pour évaluer, <code>model.train()</code> pour entraîner, attention aux BatchNorm sur petits batchs</label></li>
+    <li><input type="checkbox" id="c7"><label for="c7">Aucune fuite entre train et test</label></li>
+    <li><input type="checkbox" id="c8"><label for="c8">Plusieurs seeds avant de conclure qu’une méthode bat l’autre de 1 point</label></li>
+  </ul>
+</section>
+
+<section id="s8">
+  <h2>Pont vers la distillation</h2>
+  <p>Le fine-tuning transfère un état (des poids) ; la distillation transfère un comportement (des sorties) vers un modèle plus petit.</p>
+  <ul>
+    <li><strong>Label smoothing (0,1)</strong>, déjà utilisé ici : une cible souple uniforme. En distillation, la cible souple vient du teacher et dit quelles classes se ressemblent.</li>
+    <li><strong>Arbre de décision</strong> : la distillation répond à la branche « comportement : latence, coût ».</li>
+    <li><strong>Boucle PyTorch</strong> : la même (<code>zero_grad</code>, forward, loss, <code>backward</code>, <code>step</code>), seule la loss change.</li>
+    <li><strong>Checklist</strong> : « plusieurs seeds avant de conclure à 1 point d’écart » s’applique tel quel au gain de la distillation.</li>
+  </ul>
+</section>
+
+<section id="s9">
+  <h2>Questions probables</h2>
+  <p>Quinze questions que le public peut poser sur ce notebook, avec une réponse courte.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Question</th><th>Réponse</th></tr></thead>
+    <tbody>
+      <tr><td>Pourquoi passer de Keras à PyTorch ?</td><td>L’écosystème du fine-tuning (Hugging Face <code>transformers</code>, timm, peft) est en PyTorch, et <code>transformers</code> ne gère plus TensorFlow depuis la version 5.</td></tr>
+      <tr><td>Pourquoi le CNN from scratch ne fait-il que 11,1 % ?</td><td>370 images pour 37 races : il apprend ses exemples par cœur. Le hasard donne 2,7 %.</td></tr>
+      <tr><td>Le from scratch est-il à proscrire ?</td><td>Non : avec assez de données et d’entraînement il rattrape le pré-entraîné (He et al., 2019). Ici, avec toutes les images, il n’atteint que 43,8 %, contre 94,7 % pour le linear probe DINOv2.</td></tr>
+      <tr><td>Pourquoi dégeler le backbone n’apporte-t-il rien en vision ?</td><td>Avec 10 images par race, les écarts d’environ 1 point ne sont pas mesurables. Dégeler sert surtout quand la tâche s’éloigne du pré-entraînement.</td></tr>
+      <tr><td>Pourquoi un learning rate trop haut donne-t-il 2,7 % ?</td><td>Les pas sont trop grands : les poids pré-entraînés sont détruits en une epoch et le modèle tombe au niveau du hasard.</td></tr>
+      <tr><td>Quelle différence entre <code>requires_grad = False</code>, <code>torch.no_grad()</code> et <code>model.eval()</code> ?</td><td>Le premier fixe quels poids apprennent. Le deuxième coupe le calcul de gradient dans un bloc de code. Le troisième change le comportement de BatchNorm et du dropout.</td></tr>
+      <tr><td>Pourquoi une BatchNorm gelée pose-t-elle problème en PyTorch ?</td><td><code>requires_grad = False</code> gèle γ et β, mais en mode <code>train()</code> les statistiques continuent de bouger. Il faut remettre ces BatchNorm en <code>eval()</code>.</td></tr>
+      <tr><td>Pourquoi normaliser avec la moyenne et l’écart-type d’ImageNet ?</td><td>Le modèle n’a vu que des images préparées ainsi. Une autre préparation dégrade ses features sans aucune erreur affichée.</td></tr>
+      <tr><td>DINOv2 n’a vu aucune étiquette : comment peut-il servir ?</td><td>Son pré-entraînement est auto-supervisé : il apprend des représentations sans étiquettes. Avec 1 image par race, son linear probe fait déjà 64,4 %.</td></tr>
+      <tr><td>Pourquoi commencer par un linear probe ?</td><td>Il coûte quelques secondes et donne la barre à battre : 88,7 % en vision (ResNet-50), 92,3 % en texte.</td></tr>
+      <tr><td>Pourquoi la baseline texte fait-elle 50 % ?</td><td>Les deux classes sont équilibrées : répondre toujours « positif » donne aussi 50 %. L’accuracy seule ne suffit pas.</td></tr>
+      <tr><td>Pourquoi la loss ne descend-elle pas sous 0,67 ?</td><td>Le label smoothing (0,1) fait viser environ 90 % de probabilité à la bonne réponse, au lieu de 100 %.</td></tr>
+      <tr><td>LoRA donne-t-il toujours le même résultat que le full fine-tuning ?</td><td>Ici oui (96,0 % contre 95,8 %), mais sur un seul run : plusieurs seeds avant de conclure.</td></tr>
+      <tr><td>Pourquoi LoRA n’est-il pas plus rapide ici ?</td><td>Le calcul traverse tout le modèle quand même (28 s contre 26 s). Son gain est le stockage (4,0 Mo contre 424,3 Mo) et, sur un LLM, la mémoire.</td></tr>
+      <tr><td>Fine-tuning ou RAG pour ajouter des connaissances ?</td><td>RAG pour les faits (aller les chercher), fine-tuning pour changer un comportement (Ovadia et al., 2024).</td></tr>
+    </tbody>
+  </table></div>
+</section>
+</main>
+
+<script>
+(function () {
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function defs(id) {
+    return '<defs><marker id="' + id + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="mk" d="M0 0L10 5L0 10z"/></marker></defs>';
+  }
+  function t(x, y, s, cls, size, anchor) {
+    return '<text x="' + x + '" y="' + y + '" class="' + cls + '"' + (size ? ' font-size="' + size + '"' : '') + (anchor ? ' text-anchor="' + anchor + '"' : '') + '>' + esc(s) + '</text>';
+  }
+  function r(x, y, w, h, cls) { return '<rect class="' + cls + '" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="8"/>'; }
+  function path(d, arrow) { return '<path class="ln" d="' + d + '"' + (arrow ? ' marker-end="url(#' + arrow + ')"' : '') + '/>'; }
+  function svg(vb, label, id, body) { return '<svg viewBox="' + vb + '" role="img" aria-label="' + esc(label) + '">' + defs(id) + body + '</svg>'; }
+  function title(s) { return t(24, 34, s, 't n', 15); }
+  /* carte : nom en gras à gauche, puis lignes de détail */
+  function card(x, y, w, h, cls, name, lines) {
+    var o = r(x, y, w, h, cls) + t(x + 12, y + 24, name, 't n', 13);
+    for (var i = 0; i < lines.length; i++) o += t(x + 12, y + 44 + 16 * i, lines[i], 't', 11.5);
+    return o;
+  }
+  function swatch(x, y, cls, label) { return '<rect class="' + cls + '" x="' + x + '" y="' + y + '" width="14" height="14" rx="3"/>' + t(x + 22, y + 12, label, 'q', 11.5); }
+
+  /* 1. Vue d'ensemble : six parties */
+  (function () {
+    var W = 224, H = 104, x1 = 24, x2 = 264, x3 = 504, r1 = 56, r2 = 200, a = 'ov-arrow';
+    var p = path('M' + (x1 + W) + ' ' + (r1 + 52) + 'H' + x2, a) + path('M' + (x2 + W) + ' ' + (r1 + 52) + 'H' + x3, a) +
+      path('M' + (x3 + W / 2) + ' ' + (r1 + H) + 'V' + (r1 + H + 20) + 'H' + (x1 + W / 2) + 'V' + r2, a) +
+      path('M' + (x1 + W) + ' ' + (r2 + 52) + 'H' + x2, a) + path('M' + (x2 + W) + ' ' + (r2 + 52) + 'H' + x3, a);
+    p += card(x1, r1, W, H, 'bx', 'Partie 0 · Mise en place', ['Profils matériel : GPU ou CPU', 'Seed fixe, reproductibilité', 'Tableau des scores : accuracy,', 'poids entraînés, temps, VRAM']);
+    p += card(x2, r1, W, H, 'f1', 'Partie 1 · Le match', ['From scratch vs pré-entraîné', '37 races, 10 images par race', 'Passerelle Keras vers PyTorch', 'Boucle écrite à la main']);
+    p += card(x3, r1, W, H, 'f1', 'Partie 2 · Ouvrir la boîte', ['Filtres de la 1re couche', 'Hiérarchie des features', 'DINOv2 : sans aucune étiquette', 'Combien d’images faut-il ?']);
+    p += card(x1, r2, W, H, 'f1', 'Partie 3 · Stratégies', ['Linear probe, partiel, full FT', 'LR trop haut, LP-FT', 'Discriminative LR, BatchNorm', 'Pièges : eval(), normalisation']);
+    p += card(x2, r2, W, H, 'f2', 'Partie 4 · Le texte', ['CamemBERTav2 sur AlloCiné', 'Baseline, linear probe', 'Full fine-tuning (Trainer)', 'LoRA : petites matrices B et A']);
+    p += card(x3, r2, W, H, 'bx', 'Partie 5 · Synthèse', ['Tableau des scores final', 'Arbre : faut-il fine-tuner ?', 'Le RAG pour les connaissances', 'Checklist avant de lancer']);
+    p += swatch(24, 333, 'f1', 'Vision') + swatch(124, 333, 'f2', 'Texte') + swatch(224, 333, 'bx', 'Cadre et bilan');
+    document.getElementById('fig-overview').innerHTML = svg('0 0 760 368', 'Un seul fil : partir du pré-entraîné, en vision puis en texte', a,
+      title('Un seul fil : partir du pré-entraîné, en vision puis en texte') + p) + '<figcaption>6 parties du live, vision puis texte.</figcaption>';
+  })();
+
+  /* 2. Notions clés : backbone, head, trois réglages */
+  (function () {
+    var a = 'no-arrow';
+    var p = '';
+    p += r(24, 76, 200, 88, 'bx') + t(36, 100, 'Pré-entraînement', 't n', 13) + t(36, 116, 'Énorme jeu de données', 't', 11.5) + t(36, 132, 'ImageNet, pages web', 't', 11.5) + t(36, 148, 'Fait une fois par un labo', 't', 11.5);
+    p += path('M224 120H248', a) + path('M492 184V208') + path('M136 208H616') + path('M136 208V240', a) + path('M376 208V240', a) + path('M616 208V240', a);
+    p += r(248, 56, 488, 128, 'bx') + t(264, 80, 'Modèle pré-entraîné', 't n', 13);
+    p += r(264, 96, 216, 72, 'f1') + t(276, 120, 'Backbone : le savoir', 't n', 13) + t(276, 136, 'Entrée vers features', 't', 11.5) + t(276, 152, 'Gelé ou dégelé selon le cas', 't', 11.5);
+    p += r(504, 96, 216, 72, 'f2') + t(516, 120, 'Head : la couche finale', 't n', 13) + t(516, 136, 'Remplacée presque toujours', 't', 11.5) + t(516, 152, 'Aléatoire au départ', 't', 11.5);
+    p += t(24, 212, 'Ce qu’on règle', 'q', 11.5);
+    p += r(24, 240, 224, 88, 'bx') + t(36, 264, 'Quoi geler', 't n', 13) + t(36, 280, 'requires_grad = False', 't', 11.5) + t(36, 296, 'Keras : trainable = False', 't', 11.5) + t(36, 312, 'BatchNorm gelées : eval()', 't', 11.5);
+    p += r(264, 240, 224, 88, 'bx') + t(276, 264, 'À quelle vitesse', 't n', 13) + t(276, 280, 'LR 10 à 100 fois plus bas', 't', 11.5) + t(276, 296, 'Plus bas vers l’entrée', 't', 11.5) + t(276, 312, 'Warmup si head aléatoire', 't', 11.5);
+    p += r(504, 240, 224, 88, 'bx') + t(516, 264, 'Quelles entrées', 't n', 13) + t(516, 280, 'Mêmes mean et std qu’ImageNet', 't', 11.5) + t(516, 296, 'Tokenizer du modèle en texte', 't', 11.5) + t(516, 312, 'Taille 224 × 224 en vision', 't', 11.5);
+    p += swatch(24, 352, 'f1', 'Ce qui porte le savoir') + swatch(224, 352, 'f2', 'Ce qu’on remplace');
+    var ti = 'Le savoir est dans le backbone : on remplace la head et on règle ce qui bouge';
+    document.getElementById('fig-notions').innerHTML = svg('0 0 760 384', ti, a, title(ti) + p) + '<figcaption>Transfer learning : backbone, head, trois réglages.</figcaption>';
+  })();
+
+  /* 3. Grille des stratégies */
+  (function () {
+    var x0 = 200, pitch = 80, cw = 76, y0 = 96, rp = 44, ch = 32;
+    var grid = [['f', 'f', 'f', 'f', 'f', 'l'], ['f', 'f', 'f', 'f', 'l', 'l'], ['l', 'l', 'l', 'l', 'l', 'l'], ['x', 'x', 'x', 'x', 'x', 'x'], ['l', 'l', 'l', 'l', 'l', 'l']];
+    var ramp = [0.1, 0.16, 0.22, 0.3, 0.38, 0.46];
+    var p = '';
+    var heads = [['Stratégie', 24, null], ['stem', 238, 'middle'], ['layer1', 318, 'middle'], ['layer2', 398, 'middle'], ['layer3', 478, 'middle'], ['layer4', 558, 'middle'], ['head', 638, 'middle'], ['acc.', 690, null]];
+    heads.forEach(function (h) { p += t(h[1], 84, h[0], 'q', 11.5, h[2]); });
+    grid.forEach(function (row, ri) {
+      row.forEach(function (s, ci) {
+        var x = x0 + ci * pitch, y = y0 + ri * rp;
+        if (s === 'f') p += '<rect class="bx" x="' + x + '" y="' + y + '" width="' + cw + '" height="' + ch + '" rx="6"/>';
+        else if (s === 'x') p += '<rect class="fb" x="' + x + '" y="' + y + '" width="' + cw + '" height="' + ch + '" rx="6"/>';
+        else {
+          var op = (ri === 2 || ri === 4) ? ramp[ci] : 0.18;
+          p += '<rect x="' + x + '" y="' + y + '" width="' + cw + '" height="' + ch + '" rx="6" fill="var(--c1)" fill-opacity="' + op + '" stroke="var(--c1)" stroke-width="1.25"/>';
+        }
+      });
+    });
+    var rows = [
+      ['Linear probe', 'head seule', '88,7 %', false], ['Fine-tuning partiel', 'LR bas, head plus haut', '89,9 %', false],
+      ['Full fine-tuning', 'LR plus bas vers l’entrée', '89,0 %', false], ['LR trop haut', 'même LR élevé partout', '2,7 %', true],
+      ['LP-FT', 'part de la head du LP', '89,0 %', false]
+    ];
+    rows.forEach(function (rw, i) {
+      var y = 109 + 44 * i;
+      p += t(24, y, rw[0], 't n', 13) + t(24, y + 15, rw[1], 'q', 11.5) + t(690, y + 7, rw[2], rw[3] ? 't n' : 't', 11.5);
+    });
+    p += '<rect class="bx" x="24" y="336" width="14" height="14" rx="3"/>' + t(46, 348, 'gelé', 'q', 11.5);
+    p += '<rect x="100" y="336" width="14" height="14" rx="3" fill="var(--c1)" fill-opacity="0.3" stroke="var(--c1)" stroke-width="1.25"/>' + t(122, 348, 'apprend (plus foncé : LR plus haut)', 'q', 11.5);
+    p += '<rect class="fb" x="360" y="336" width="14" height="14" rx="3"/>' + t(382, 348, 'LR trop haut : modèle détruit', 'q', 11.5);
+    var ti = 'Plus on dégèle, plus ça coûte, sans gain mesurable avec 10 images par race';
+    document.getElementById('fig-strat').innerHTML = '<svg viewBox="0 0 760 368" role="img" aria-label="' + esc(ti) + '">' + title(ti) + p + '</svg>' +
+      '<figcaption>5 stratégies × 6 blocs de ResNet-50, accuracy.</figcaption>';
+  })();
+
+  /* 4. Arbre de décision */
+  (function () {
+    var qx = 24, qw = 300, ox = 420, ow = 316, h = 56, ys = [56, 144, 232, 320], a = 'tree-arrow';
+    var p = '';
+    ys.forEach(function (y, i) {
+      p += path('M174 ' + (y + h) + 'V' + (i < 3 ? ys[i + 1] : 408), a);
+      p += path('M' + (qx + qw) + ' ' + (y + 28) + 'H' + ox, a);
+    });
+    p += path('M578 ' + (320 + h) + 'V388') + path('M498 388H658') + path('M498 388V408', a) + path('M658 388V408', a);
+    [76, 164, 252, 340].forEach(function (y) { p += t(372, y, 'oui', 'q', 11.5, 'middle'); });
+    [136, 224, 312, 400].forEach(function (y) { p += t(182, y, 'non', 'q', 11.5); });
+    var qs = [['1. Manque-t-il un jeu d’évaluation ?', 'qui mesure ce que je veux'], ['2. Un bon prompt suffit-il ?', 'un modèle existant, quelques exemples'],
+      ['3. Manque-t-il des connaissances ?', 'documents internes, infos récentes'], ['4. Le problème est-il un comportement ?', 'format, style, tâche précise, latence, coût']];
+    var os = [['Le construire d’abord', 'sans lui, on ne mesure rien'], ['S’arrêter là', 'le modèle existant suffit'], ['RAG', 'aller chercher l’information'], ['Fine-tuning', 'pour changer la façon de faire']];
+    ys.forEach(function (y, i) {
+      p += r(qx, y, qw, h, 'bx') + t(qx + 12, y + 24, qs[i][0], 't n', 13) + t(qx + 12, y + 42, qs[i][1], 'q', 11.5);
+      p += r(ox, y, ow, h, i === 3 ? 'ba' : 'bx') + t(ox + 12, y + 24, os[i][0], 't n', 13) + t(ox + 12, y + 42, os[i][1], 'q', 11.5);
+    });
+    p += r(qx, 408, qw, 56, 'bx') + t(qx + 12, 432, 'Revoir le besoin', 't n', 13) + t(qx + 12, 450, 'le fine-tuning n’est pas la réponse', 'q', 11.5);
+    p += r(420, 408, 156, 72, 'bx') + t(432, 432, 'Peu de données', 't n', 13) + t(432, 448, 'ou de GPU', 't n', 13) + t(432, 466, 'linear probe, LoRA', 'q', 11.5);
+    p += r(580, 408, 156, 72, 'bx') + t(592, 432, 'Beaucoup de', 't n', 13) + t(592, 448, 'données et calcul', 't n', 13) + t(592, 466, 'full fine-tuning', 'q', 11.5);
+    var ti = 'On ne fine-tune que pour changer un comportement, pas pour ajouter des connaissances';
+    document.getElementById('fig-tree').innerHTML = svg('0 0 760 504', ti, a, title(ti) + p) + '<figcaption>Arbre de décision : 4 questions dans l’ordre.</figcaption>';
+  })();
+})();
+</script>
+</body>
+</html>
